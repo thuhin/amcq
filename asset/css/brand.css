@@ -1,0 +1,196 @@
+/* ==========================================================================
+   AcademicMCQ — brand tokens
+   Values from UI Brand Guideline §8.3 (palette) and §9 (type scale).
+
+   Everything downstream references these variables, never a raw hex. Changing
+   the brand blue should mean editing one line here, not grepping stylesheets.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand ---------------------------------------------------------- */
+  --amcq-primary-700: #174A7E;   /* logo, header, primary CTA */
+  --amcq-primary-600: #1F5F9F;
+  --amcq-primary-100: #EAF3FB;   /* tinted surfaces, selected states */
+  --amcq-accent:      #16A6C9;   /* progress, links, selection */
+
+  /* ---- Semantic -------------------------------------------------------
+     Guideline §8.2: green and red are reserved for quiz correctness. Do not
+     reuse them for general UI accents, or a correct/incorrect answer stops
+     reading as one.                                                        */
+  --amcq-success: #1D8F5A;
+  --amcq-warning: #C88712;
+  --amcq-error:   #C84545;
+
+  /* ---- Neutrals -------------------------------------------------------- */
+  --amcq-text:      #16202A;
+  --amcq-text-soft: #607080;
+  --amcq-border:    #DDE4EA;
+  --amcq-surface:   #F7F9FB;
+  --amcq-white:     #FFFFFF;
+
+  /* ---- Typography -----------------------------------------------------
+     Inter for English, Noto Sans Bengali for Bangla. Both are listed so a
+     bilingual string renders in one visual weight instead of switching
+     mid-sentence to a fallback.                                            */
+  --amcq-font: 'Inter', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+
+  --amcq-h1: 2.25rem;   /* 36px, within the 32-40 range */
+  --amcq-h2: 1.75rem;   /* 28px */
+  --amcq-h3: 1.375rem;  /* 22px */
+  --amcq-body: 1rem;    /* 16px */
+  --amcq-small: 0.875rem;
+  --amcq-meta: 0.8125rem;
+  /* Guideline §9: quiz text is larger than body text on mobile, because the
+     question is the one thing on that screen that must not be squinted at. */
+  --amcq-quiz: 1.1875rem;
+
+  /* ---- Shape ----------------------------------------------------------- */
+  --amcq-radius: 10px;        /* buttons: 8-12px, never pills everywhere */
+  --amcq-radius-card: 14px;   /* cards: 12-16px */
+  --amcq-shadow: 0 1px 2px rgba(22, 32, 42, .06), 0 4px 12px rgba(22, 32, 42, .05);
+
+  /* ---- Layout ---------------------------------------------------------- */
+  --amcq-container: 1140px;
+  --amcq-gutter: 16px;
+  --amcq-tap: 44px;           /* minimum tap target, §6.4 */
+}
+
+/* --------------------------------------------------------------------------
+   Base
+   -------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--amcq-font);
+  font-size: var(--amcq-body);
+  line-height: 1.6;
+  color: var(--amcq-text);
+  background: var(--amcq-white);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .5em; font-weight: 700; }
+h1 { font-size: var(--amcq-h1); }
+h2 { font-size: var(--amcq-h2); }
+h3 { font-size: var(--amcq-h3); }
+
+a { color: var(--amcq-primary-600); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.amcq-container {
+  max-width: var(--amcq-container);
+  margin: 0 auto;
+  padding: 0 var(--amcq-gutter);
+}
+
+.amcq-muted { color: var(--amcq-text-soft); }
+
+/* --------------------------------------------------------------------------
+   Buttons — one primary CTA per page (§6.3)
+   -------------------------------------------------------------------------- */
+.amcq-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: var(--amcq-tap);
+  padding: .625rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: var(--amcq-radius);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.amcq-btn:hover { text-decoration: none; }
+
+.amcq-btn--primary {
+  background: var(--amcq-primary-600);
+  color: var(--amcq-white);
+}
+.amcq-btn--primary:hover { background: var(--amcq-primary-700); }
+
+.amcq-btn--secondary {
+  background: var(--amcq-white);
+  color: var(--amcq-primary-700);
+  border-color: var(--amcq-border);
+}
+.amcq-btn--secondary:hover { border-color: var(--amcq-primary-600); }
+
+/* Visible focus for keyboard users. Never remove without a replacement. */
+.amcq-btn:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--amcq-accent);
+  outline-offset: 2px;
+}
+
+/* --------------------------------------------------------------------------
+   Cards
+   -------------------------------------------------------------------------- */
+.amcq-card {
+  background: var(--amcq-white);
+  border: 1px solid var(--amcq-border);
+  border-radius: var(--amcq-radius-card);
+  padding: 1.25rem;
+  box-shadow: var(--amcq-shadow);
+}
+
+/* --------------------------------------------------------------------------
+   The three value systems must never look alike (§6.1):
+   money is Taka, points are reputation, score is performance.
+   -------------------------------------------------------------------------- */
+.amcq-money  { color: var(--amcq-success); font-weight: 700; font-variant-numeric: tabular-nums; }
+.amcq-points { color: var(--amcq-primary-700); font-weight: 700; }
+.amcq-score  { color: var(--amcq-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
+/* --------------------------------------------------------------------------
+   Quiz feedback — §11: never communicate correctness by color alone.
+   Each state carries an icon and a text label as well as the color.
+   -------------------------------------------------------------------------- */
+.amcq-option {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  width: 100%;
+  min-height: var(--amcq-tap);
+  padding: .875rem 1rem;
+  margin-bottom: .625rem;
+  background: var(--amcq-white);
+  border: 1.5px solid var(--amcq-border);
+  border-radius: var(--amcq-radius);
+  font-size: var(--amcq-quiz);
+  text-align: left;
+  cursor: pointer;
+}
+.amcq-option:hover { border-color: var(--amcq-primary-600); }
+.amcq-option--selected { border-color: var(--amcq-primary-600); background: var(--amcq-primary-100); }
+.amcq-option--correct   { border-color: var(--amcq-success); background: #EAF7F0; }
+.amcq-option--incorrect { border-color: var(--amcq-error);   background: #FBEDED; }
+
+/* --------------------------------------------------------------------------
+   Progress — streak, tier, chapter. Not decorative (§10).
+   -------------------------------------------------------------------------- */
+.amcq-progress {
+  height: 8px;
+  background: var(--amcq-primary-100);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.amcq-progress__bar {
+  height: 100%;
+  background: var(--amcq-accent);
+  border-radius: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   Mobile first (§6.4). Single column, and the hero headline steps down so a
+   long Bangla subtitle does not wrap into a wall of text on a small screen.
+   -------------------------------------------------------------------------- */
+@media (max-width: 640px) {
+  :root { --amcq-h1: 1.875rem; --amcq-h2: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}

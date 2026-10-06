@@ -1,0 +1,33 @@
+# ---------------------------------------------------------------------------
+#  Per-server environment: base URLs, DB, SMTP, cookies.
+#  Copy application/config/env.php.example to env.php and fill in per machine.
+#  This is the one file that must differ between localhost and production.
+# ---------------------------------------------------------------------------
+/application/config/env.php
+
+# Payment gateway credentials (copy of payment.php.example)
+/application/config/payment.php
+
+# OpenAI key for question generation (copy of ai.php.example)
+/application/config/ai.php
+
+# CodeIgniter runtime output
+/application/cache/*
+!/application/cache/index.html
+!/application/cache/.htaccess
+/application/logs/*
+!/application/logs/index.html
+!/application/logs/.htaccess
+
+# Composer deps, if introduced later
+/vendor
+
+# User uploads (certificates, question images) are data, not source
+/upload
+
+# Editor / OS noise
+/nbproject/private/
+.vscode/
+.idea/
+*.swp
+.DS_Store

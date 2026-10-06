@@ -1,0 +1,133 @@
+/* ==========================================================================
+   AcademicMCQ — header, footer and home page layout.
+   Tokens only; no raw hex values. See brand.css.
+   ========================================================================== */
+
+/* ---- Header -------------------------------------------------------------- */
+.amcq-header {
+  background: var(--amcq-white);
+  border-bottom: 1px solid var(--amcq-border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.amcq-header__inner {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  min-height: 68px;
+}
+.amcq-logo { display: flex; align-items: center; gap: .625rem; color: inherit; }
+.amcq-logo:hover { text-decoration: none; }
+.amcq-logo__mark {
+  display: grid;
+  place-items: center;
+  width: 36px; height: 36px;
+  background: var(--amcq-primary-700);
+  color: var(--amcq-white);
+  border-radius: 9px;
+  font-weight: 700;
+}
+.amcq-logo__word { display: block; font-size: 1.25rem; color: var(--amcq-primary-700); }
+.amcq-logo__tag  { display: block; font-size: var(--amcq-meta); color: var(--amcq-text-soft); }
+
+.amcq-nav { display: flex; gap: 1.25rem; margin-left: auto; }
+.amcq-nav a { color: var(--amcq-text); font-weight: 500; }
+.amcq-header__actions { display: flex; gap: .625rem; }
+
+/* ---- Hero ---------------------------------------------------------------- */
+.amcq-hero {
+  background: linear-gradient(180deg, var(--amcq-primary-100), var(--amcq-white));
+  padding: 3.5rem 0;
+}
+.amcq-hero__inner {
+  display: grid;
+  grid-template-columns: 1.1fr .9fr;
+  gap: 2.5rem;
+  align-items: center;
+}
+.amcq-hero__title { margin-bottom: .25rem; }
+.amcq-hero__title--accent { color: var(--amcq-primary-600); }
+.amcq-hero__bangla { font-size: var(--amcq-h3); font-weight: 600; margin: 0 0 .75rem; }
+.amcq-hero__lede { font-size: 1.0625rem; color: var(--amcq-text-soft); max-width: 46ch; }
+.amcq-hero__cta { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+.amcq-hero__note { font-size: var(--amcq-small); margin-top: 1rem; }
+
+.amcq-hero__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 0; }
+.amcq-stat { display: flex; flex-direction: column; gap: .125rem; font-size: var(--amcq-small); }
+.amcq-stat__value { font-size: 1.5rem; line-height: 1.2; }
+.amcq-stat__meta { font-size: var(--amcq-meta); }
+
+/* ---- Sections ------------------------------------------------------------ */
+.amcq-section { padding: 3rem 0; }
+.amcq-section--tint { background: var(--amcq-surface); }
+
+.amcq-grid {
+  display: grid;
+  gap: 1rem;
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+}
+.amcq-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.amcq-grid--4 { grid-template-columns: repeat(4, 1fr); }
+.amcq-grid--6 { grid-template-columns: repeat(6, 1fr); }
+.amcq-grid h3 { font-size: var(--amcq-h3); }
+
+/* ---- Class / subject pickers --------------------------------------------- */
+.amcq-pick {
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  min-height: var(--amcq-tap);
+  color: inherit;
+}
+.amcq-pick:hover { text-decoration: none; }
+.amcq-pick__meta { font-size: var(--amcq-small); color: var(--amcq-text-soft); }
+.amcq-pick--active { border-color: var(--amcq-primary-600); background: var(--amcq-primary-100); }
+.amcq-pick--active .amcq-pick__meta { color: var(--amcq-primary-700); font-weight: 600; }
+/* Coming-soon tiles are muted but still meet contrast: they carry real
+   information (which classes exist), so they must stay readable. */
+.amcq-pick--soon { background: var(--amcq-surface); box-shadow: none; }
+
+.amcq-subject { display: flex; flex-direction: column; gap: .25rem; }
+
+/* ---- Competition promo --------------------------------------------------- */
+.amcq-promo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: var(--amcq-primary-700);
+  border-color: var(--amcq-primary-700);
+  color: var(--amcq-white);
+}
+.amcq-promo__title { color: var(--amcq-white); margin-bottom: .25rem; }
+.amcq-promo__facts { font-size: var(--amcq-small); opacity: .85; margin-bottom: 0; }
+
+/* ---- Footer -------------------------------------------------------------- */
+.amcq-footer {
+  background: var(--amcq-surface);
+  border-top: 1px solid var(--amcq-border);
+  padding: 2.5rem 0;
+  margin-top: 2rem;
+}
+.amcq-footer__links { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; margin-bottom: 1rem; }
+.amcq-footer__note { font-size: var(--amcq-small); margin: .25rem 0; }
+
+/* ---- Mobile first (§6.4): one column, stacked CTAs ----------------------- */
+@media (max-width: 900px) {
+  .amcq-nav { display: none; }   /* replaced by bottom nav once logged-in UI lands */
+  .amcq-hero__inner { grid-template-columns: 1fr; }
+  .amcq-grid--4, .amcq-grid--6 { grid-template-columns: repeat(2, 1fr); }
+  .amcq-grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .amcq-header__inner { gap: .75rem; min-height: 60px; }
+  .amcq-logo__tag { display: none; }
+  .amcq-hero { padding: 2.5rem 0; }
+  .amcq-hero__stats { grid-template-columns: 1fr 1fr; }
+  .amcq-grid--3, .amcq-grid--4, .amcq-grid--6 { grid-template-columns: 1fr; }
+  .amcq-hero__cta .amcq-btn { flex: 1 1 100%; }
+  .amcq-promo { flex-direction: column; align-items: flex-start; }
+}

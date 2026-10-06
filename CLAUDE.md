@@ -1,0 +1,49 @@
+# AcademicMCQ — working notes
+
+CodeIgniter 3.1.13 + MySQL 8 + PHP 7.4. See README.md for setup.
+
+## Before changing anything
+
+- **Product rules are constants**, defined once in `application/config/constants.php`
+  (`QUIZ_FEE_TAKA`, `STREAK_PASS_PERCENTAGE`, `STREAK_REQUIRED_QUIZZES`,
+  `STREAK_WINDOW_HOURS`, `QUIZ_QUESTION_COUNT`). Never re-type these numbers in a
+  controller or a view — the blueprint's own revision history is a list of places
+  where a duplicated rule drifted out of sync.
+- **Never commit `application/config/env.php`.** It is gitignored. Per-server URLs,
+  DB credentials and cookie settings live there and nowhere else.
+- **CSS uses tokens only.** Add a variable to `asset/css/brand.css` rather than a
+  raw hex value in a component stylesheet.
+
+## Rules that are easy to get wrong
+
+- **Wallet ≠ Academic Points.** Wallet is real money in Taka and is spendable.
+  Academic Points are reputation: they never decrease and can never be spent or
+  converted. Blueprint v1.1 removed the "1 point = Tk 1" framing deliberately —
+  it put the product under Bangladesh's e-money rules. Do not reintroduce any
+  exchange between the two.
+- **Streak rule is "each quiz scores 60%+", not "60%+ average."** v2.0 fixed this;
+  the average reading contradicts the blueprint's own worked example.
+- **New users start at the `Starter` tier, not Bronze.** Bronze requires 100
+  points, so defaulting a 0-point user to Bronze breaks the tier ladder.
+- **Only a completed attempt counts toward a streak.** `quiz_attempts.status`
+  must be `completed`; otherwise a student can farm credit by starting and
+  quitting quizzes.
+- **A wallet may never go negative.** Enforced by a CHECK constraint, and the
+  balance plus its ledger row must be written in one transaction.
+- **Guest attempts are real.** `quiz_attempts.user_id` is NULL for guests, keyed
+  by `session_id`. A visitor must be able to finish a quiz and see a result
+  before being asked to register.
+
+## Post-MVP, do not build yet
+
+WhatsApp Challenge, Friday Fun, and School Competition are all marked POST-MVP in
+blueprint v2.0, and the WhatsApp Challenge has an unresolved internal
+contradiction plus an open legal question about peer point wagering.
+
+## Verifying a change
+
+```bash
+php -l <file>                      # syntax
+php -S 127.0.0.1:8899 -t .         # serve
+curl -s http://127.0.0.1:8899/index.php | head
+```
