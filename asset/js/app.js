@@ -103,3 +103,14 @@
     });
   });
 })();
+
+/* Character counter for textareas with data-counter (Contact Us message). */
+(function () {
+  document.querySelectorAll('textarea[data-counter]').forEach(function (ta) {
+    var out = document.getElementById(ta.getAttribute('data-counter'));
+    if (!out) return;
+    var max = ta.getAttribute('maxlength');
+    var update = function () { out.textContent = ta.value.length + ' / ' + max; };
+    ta.addEventListener('input', update); update();
+  });
+})();

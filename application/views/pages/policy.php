@@ -6,9 +6,7 @@
          none is invented here. -->
     <div class="amcq-card">
       <p>This page is being prepared and will be published before launch.</p>
-      <?php if ($slug !== 'contact'): ?>
       <p class="amcq-muted">Questions in the meantime? Use the <a href="<?= site_url('contact') ?>">contact page</a>.</p>
-      <?php endif; ?>
     </div>
   </div>
 </section>

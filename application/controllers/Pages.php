@@ -9,7 +9,6 @@ class Pages extends MY_Controller
 		'pricing'           => array('Pricing', 'pricing'),
 		'faq'               => array('Frequently Asked Questions', 'faq'),
 		'about'             => array('About', ''),
-		'contact'           => array('Contact', ''),
 		'terms'             => array('Terms of Use', ''),
 		'privacy'           => array('Privacy Policy', ''),
 		'refund-policy'     => array('Refund & Payment Policy', ''),

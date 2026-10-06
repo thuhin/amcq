@@ -738,6 +738,28 @@ CREATE TABLE user_settings (
     CONSTRAINT fk_settings_user FOREIGN KEY (user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Contact Us form. Stored, not emailed: there is no outgoing mail yet.
+-- Staff read these in the database (admin screen to come).
+DROP TABLE IF EXISTS contact_messages;
+CREATE TABLE contact_messages (
+    id              INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id         INT UNSIGNED NULL,              -- set when signed in
+    name            VARCHAR(100) NOT NULL,
+    phone           VARCHAR(20)  NULL,
+    email           VARCHAR(150) NULL,
+    topic           ENUM('general','payment','competition','question','school','technical') NOT NULL DEFAULT 'general',
+    message         TEXT         NOT NULL,
+    ip_address      VARCHAR(45)  NULL,
+    user_agent      VARCHAR(255) NULL,
+    status          ENUM('new','read','replied','closed') NOT NULL DEFAULT 'new',
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_contact_status (status, created_at),
+    KEY idx_contact_ip (ip_address, created_at),
+    CONSTRAINT fk_contact_user FOREIGN KEY (user_id) REFERENCES users(id),
+    -- Every message must be answerable: a phone or an email, at least one.
+    CONSTRAINT ck_contact_reachable CHECK (phone IS NOT NULL OR email IS NOT NULL)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- CodeIgniter database session driver (sess_save_path = 'ci_sessions').
 DROP TABLE IF EXISTS ci_sessions;
 CREATE TABLE ci_sessions (

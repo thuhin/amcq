@@ -164,3 +164,14 @@ define('LEADERBOARD_PUBLIC_SIZE', 10);   // "Top 10 visible to everyone" (§11)
 // https://www.youtube-nocookie.com/embed/VIDEO_ID. Empty = "coming soon".
 // Set per server in env.php to override.
 defined('INTRO_VIDEO_URL') OR define('INTRO_VIDEO_URL', '');
+
+/*
+| Contact details (Contact Us page and footer). PLACEHOLDERS: replace with
+| the real ones before launch. Override per server in env.php if needed.
+*/
+defined('CONTACT_ADDRESS')  OR define('CONTACT_ADDRESS',  'Level 5, Example Tower, 123 Placeholder Road, Dhanmondi, Dhaka 1209');
+defined('CONTACT_PHONE')    OR define('CONTACT_PHONE',    '+880 1700-000000');
+defined('CONTACT_EMAIL')    OR define('CONTACT_EMAIL',    'support@academicmcq.com');
+defined('CONTACT_HOURS')    OR define('CONTACT_HOURS',    'Saturday – Thursday, 10:00 AM – 6:00 PM');
+defined('CONTACT_MAP_URL')  OR define('CONTACT_MAP_URL',  '');   // e.g. a Google Maps link; empty hides the button
+define('CONTACT_LIMIT_PER_HOUR', 5);                             // messages per IP address

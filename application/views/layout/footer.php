@@ -12,6 +12,11 @@
         <span class="brand__text"><strong class="brand__word">Academic<span>MCQ</span></strong><small class="brand__tag">Practice. Learn. Compete.</small></span></a>
       <p>অনুশীলন • শেখা • প্রতিযোগিতা</p>
       <p class="amcq-muted">Easy learning. Healthy competition. Lifetime recognition. Fair chance for all.</p>
+      <div class="site-footer__contact">
+        <span><?= icon('map-pin') ?><?= e(CONTACT_ADDRESS) ?></span>
+        <a href="tel:<?= e(preg_replace('/[^\d+]/', '', CONTACT_PHONE)) ?>"><?= icon('phone') ?><?= e(CONTACT_PHONE) ?></a>
+        <a href="mailto:<?= e(CONTACT_EMAIL) ?>"><?= icon('mail') ?><?= e(CONTACT_EMAIL) ?></a>
+      </div>
     </div>
     <nav class="site-footer__col" aria-label="Product">
       <strong>Learn</strong>

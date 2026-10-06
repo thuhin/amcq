@@ -54,4 +54,5 @@ $route['quiz/(:num)/resume']             = 'quiz/resume/$1';
 $route['leaderboard']                    = 'leaderboard/index';
 $route['competition']                    = 'competition/index';
 $route['competition/register']           = 'competition/register';
-$route['(how-it-works|pricing|faq|about|contact|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';
+$route['contact']                        = 'contact/index';
+$route['(how-it-works|pricing|faq|about|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';

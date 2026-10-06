@@ -54,6 +54,7 @@ can stay the same.
 | My Progress, Rank, Wallet, Profile | §5.2–5.8 | `/progress`, `/rank`, `/wallet`, `/profile` |
 | Correct Me | §5.5 | `/correct-me` |
 | Search, Notifications, Certificates, FAQ | header/sidebar in designs | `/search`, `/notifications`, `/certificates`, `/faq` |
+| Contact Us | no mockup; site design language | `/contact` |
 | Top Schools This Week, testimonials | homepage designs | `/schools`, `/testimonials` |
 | Leaderboard, Competition, Pricing, How It Works | §4.6–4.8 | |
 
@@ -78,6 +79,10 @@ size doesn't win), What Students Say, Watch Video.
   the competition rounds. Competition registration is closed (`status = 'draft'`).
 - **Referrals, certificates, notifications UI.** Tables exist; no pages yet.
 - **Legal pages.** Placeholders; the text must come from the business.
+- **Contact details are placeholders.** Address, phone, email and hours on the
+  Contact Us page and footer come from `CONTACT_*` in `constants.php`; set the
+  real ones there (or per server in `env.php`). Messages are stored in
+  `contact_messages`, not emailed; there is no screen to read them yet.
 - **Intro video.** Set `INTRO_VIDEO_URL` (a YouTube embed URL) in `env.php`;
   until then How It Works shows "coming soon".
 - **Testimonials.** Only the demo seed has any (the design's three samples).
@@ -126,7 +131,7 @@ size doesn't win), What Students Say, Watch Video.
 
 | File | Contents | Production? |
 |---|---|---|
-| `database/schema.sql` | 39 tables. **Drops and recreates them.** | First install only |
+| `database/schema.sql` | 40 tables. **Drops and recreates them.** | First install only |
 | `database/seed.sql` | Tiers, difficulty weights, prizes, career ladder, curriculum | Yes |
 | `database/seed_sample_questions.sql` | 50 AI-drafted questions, `origin='ai'` | **No**, not until a teacher has checked them |
 | `database/seed_demo.sql` | Fake students, wallets, points | **Never** |
@@ -145,7 +150,7 @@ php -S 127.0.0.1:8899 tests/dev_router.php &
 python3 tests/e2e.py        # set env.php URLs to http://127.0.0.1:8899/ first
 ```
 
-80 checks drive the site like a browser and verify the database after each step:
+89 checks drive the site like a browser and verify the database after each step:
 grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
 streak and mastery rules, double-submit safety, the timer and pause, Try Harder,
 the design pages, and that every wallet
