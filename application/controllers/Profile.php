@@ -36,6 +36,6 @@ class Profile extends MY_Controller
 			'settings' => $this->User_model->settings($uid),
 			'schools'  => $this->User_model->schools(),
 			'class'    => $this->db->get_where('classes', array('id' => $this->user['class_id']))->row_array(),
-		), array('title' => 'Profile & Settings', 'nav' => 'profile'));
+		), array('title' => 'Profile & Settings', 'nav' => 'profile', 'app' => TRUE));
 	}
 }

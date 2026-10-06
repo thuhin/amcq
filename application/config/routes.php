@@ -39,8 +39,19 @@ $route['profile']                        = 'profile/index';
 $route['correct-me']                     = 'correct_me/index';
 $route['correct-me/(:num)']              = 'correct_me/question/$1';
 
+// Pages linked from the designs' header and homepage
+$route['signup']                         = 'auth/login/signup';
+$route['search']                         = 'search/index';
+$route['notifications']                  = 'notifications/index';
+$route['notifications/read']             = 'notifications/read';
+$route['certificates']                   = 'certificates/index';
+$route['schools']                        = 'schools_board/index';
+$route['testimonials']                   = 'testimonials/index';
+$route['quiz/(:num)/pause']              = 'quiz/pause/$1';
+$route['quiz/(:num)/resume']             = 'quiz/resume/$1';
+
 // Public
 $route['leaderboard']                    = 'leaderboard/index';
 $route['competition']                    = 'competition/index';
 $route['competition/register']           = 'competition/register';
-$route['(how-it-works|pricing|about|contact|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';
+$route['(how-it-works|pricing|faq|about|contact|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';

@@ -159,3 +159,8 @@ define('OTP_MAX_ATTEMPTS',  5);
 define('OTP_RESEND_SECONDS', 60);
 
 define('LEADERBOARD_PUBLIC_SIZE', 10);   // "Top 10 visible to everyone" (§11)
+
+// "Watch Video" on the homepage (designs 01-07). A YouTube embed URL, e.g.
+// https://www.youtube-nocookie.com/embed/VIDEO_ID. Empty = "coming soon".
+// Set per server in env.php to override.
+defined('INTRO_VIDEO_URL') OR define('INTRO_VIDEO_URL', '');

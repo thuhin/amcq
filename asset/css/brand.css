@@ -7,36 +7,37 @@
    ========================================================================== */
 
 :root {
-  /* ---- Brand ---------------------------------------------------------- */
-  --amcq-primary-700: #174A7E;   /* logo, header, primary CTA */
-  --amcq-primary-600: #1F5F9F;
-  --amcq-primary-100: #EAF3FB;   /* tinted surfaces, selected states */
-  --amcq-accent:      #16A6C9;   /* progress, links, selection */
+  /* ---- Brand: sampled from the design mockups (source of truth) --------- */
+  --amcq-navy:        #071A4A;   /* headings, "Academic" in the logo */
+  --amcq-navy-deep:   #001A4B;   /* competition banner, dark cards */
+  --amcq-primary-700: #0451CC;   /* primary hover/pressed */
+  --amcq-primary-600: #0665FC;   /* buttons, links, active nav, "MCQ" */
+  --amcq-primary-100: #EAF3FE;   /* selected rows, tinted cards */
+  --amcq-primary-200: #DCEDFE;   /* active sidebar item */
+  --amcq-accent:      #2F7BFF;   /* progress bars */
 
-  /* ---- Semantic -------------------------------------------------------
-     Guideline §8.2: green and red are reserved for quiz correctness. Do not
-     reuse them for general UI accents, or a correct/incorrect answer stops
-     reading as one.                                                        */
-  --amcq-success: #1D8F5A;
-  --amcq-warning: #C88712;
-  --amcq-error:   #C84545;
+  /* ---- Semantic --------------------------------------------------------
+     Green and red stay reserved for correctness; never decorative.        */
+  --amcq-success:      #0DBF82;  /* icons, bars, answered state */
+  --amcq-success-text: #088A5E;  /* green text that must stay readable */
+  --amcq-warning:      #FEB12D;
+  --amcq-error:        #F04A5E;
+  --amcq-error-bar:    #FD6174;
 
-  /* ---- Supporting accents ----------------------------------------------
-     Only for the soft icon chips the mockups use to tell subjects and stat
-     cards apart. Never for text, buttons, or correctness. */
-  --amcq-purple: #7C4DDB;  --amcq-purple-bg: #F1EBFD;
-  --amcq-pink:   #D9447A;  --amcq-pink-bg:   #FCEAF1;
-  --amcq-orange: #E8742B;  --amcq-orange-bg: #FDF0E6;
-  --amcq-amber:  #C88712;  --amcq-amber-bg:  #FCF4E1;
-  --amcq-green-bg: #E8F6EF;
-  --amcq-red-bg:   #FBEDED;
-  --amcq-blue-bg:  #EAF3FB;
+  /* ---- Supporting accents (icon chips, subject colours) ---------------- */
+  --amcq-purple: #9459FA;  --amcq-purple-bg: #F2EBFF;
+  --amcq-pink:   #FC5087;  --amcq-pink-bg:   #FFEAF1;
+  --amcq-orange: #FF8A1F;  --amcq-orange-bg: #FFF1E3;
+  --amcq-amber:  #F5A30A;  --amcq-amber-bg:  #FFF6E0;
+  --amcq-green-bg: #E7F8F1;
+  --amcq-red-bg:   #FFEDEF;
+  --amcq-blue-bg:  #EAF3FE;
 
   /* ---- Neutrals -------------------------------------------------------- */
-  --amcq-text:      #16202A;
-  --amcq-text-soft: #607080;
-  --amcq-border:    #DDE4EA;
-  --amcq-surface:   #F7F9FB;
+  --amcq-text:      #0E1B3D;
+  --amcq-text-soft: #5B6B82;
+  --amcq-border:    #E3EAF3;
+  --amcq-surface:   #F5FAFE;
   --amcq-white:     #FFFFFF;
 
   /* ---- Typography -----------------------------------------------------
@@ -44,6 +45,7 @@
      bilingual string renders in one visual weight instead of switching
      mid-sentence to a fallback.                                            */
   --amcq-font: 'Inter', 'Noto Sans Bengali', system-ui, -apple-system, sans-serif;
+  --amcq-font-head: 'Poppins', 'Noto Sans Bengali', 'Inter', system-ui, sans-serif;
 
   --amcq-h1: 2.25rem;   /* 36px, within the 32-40 range */
   --amcq-h2: 1.75rem;   /* 28px */
@@ -56,9 +58,10 @@
   --amcq-quiz: 1.1875rem;
 
   /* ---- Shape ----------------------------------------------------------- */
-  --amcq-radius: 10px;        /* buttons: 8-12px, never pills everywhere */
+  --amcq-radius: 10px;
+  --amcq-radius-lg: 18px;        /* buttons: 8-12px, never pills everywhere */
   --amcq-radius-card: 14px;   /* cards: 12-16px */
-  --amcq-shadow: 0 1px 2px rgba(22, 32, 42, .06), 0 4px 12px rgba(22, 32, 42, .05);
+  --amcq-shadow: 0 1px 2px rgba(7, 26, 74, .04), 0 6px 18px rgba(7, 26, 74, .06);
 
   /* ---- Layout ---------------------------------------------------------- */
   --amcq-container: 1140px;
@@ -81,7 +84,7 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3 { line-height: 1.25; margin: 0 0 .5em; font-weight: 700; }
+h1, h2, h3 { line-height: 1.25; margin: 0 0 .5em; font-weight: 700; font-family: var(--amcq-font-head); color: var(--amcq-navy); letter-spacing: -.01em; }
 h1 { font-size: var(--amcq-h1); }
 h2 { font-size: var(--amcq-h2); }
 h3 { font-size: var(--amcq-h3); }
@@ -121,11 +124,12 @@ a:hover { text-decoration: underline; }
   color: var(--amcq-white);
 }
 .amcq-btn--primary:hover { background: var(--amcq-primary-700); }
+.amcq-btn--primary { box-shadow: 0 6px 16px rgba(6, 101, 252, .22); }
 
 .amcq-btn--secondary {
   background: var(--amcq-white);
-  color: var(--amcq-primary-700);
-  border-color: var(--amcq-border);
+  color: var(--amcq-primary-600);
+  border-color: var(--amcq-primary-600);
 }
 .amcq-btn--secondary:hover { border-color: var(--amcq-primary-600); }
 
@@ -151,8 +155,8 @@ a:focus-visible {
    The three value systems must never look alike (§6.1):
    money is Taka, points are reputation, score is performance.
    -------------------------------------------------------------------------- */
-.amcq-money  { color: var(--amcq-success); font-weight: 700; font-variant-numeric: tabular-nums; }
-.amcq-points { color: var(--amcq-primary-700); font-weight: 700; }
+.amcq-money  { color: var(--amcq-success-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+.amcq-points { color: var(--amcq-primary-600); font-weight: 700; }
 .amcq-score  { color: var(--amcq-text); font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* --------------------------------------------------------------------------

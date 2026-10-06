@@ -5,10 +5,15 @@
 -- ===========================================================================
 SET NAMES utf8mb4;
 
+-- Schools as named in the homepage designs (02-07).
 INSERT INTO schools (id, name, district, is_verified) VALUES
-(1, 'Dhaka Collegiate School',            'Dhaka',      1),
-(2, 'Chittagong Government Primary School','Chattogram', 1),
-(3, 'Rajshahi Model School',              'Rajshahi',   1);
+(1, 'Dhaka Collegiate School',              'Dhaka',      1),
+(2, 'Chattogram Govt. Girls\' High School',  'Chattogram', 1),
+(3, 'Rajshahi Model School',                'Rajshahi',   1),
+(4, 'Ideal School & College',               'Dhaka',      1),
+(5, 'Rajuk Uttara Model College',           'Dhaka',      1),
+(6, 'Viqarunnisa Noon School & College',    'Dhaka',      1),
+(7, 'Nosirabad Govt. High School',          'Mymensingh', 1);
 
 -- id 1 is the demo login: phone 01700000001 (OTP is shown on screen in development).
 INSERT INTO users (id, name, phone, display_name, class_id, school_id, referral_code, phone_verified_at) VALUES
@@ -58,3 +63,25 @@ UPDATE wallets SET balance = 50.00 WHERE user_id = 1;
 INSERT INTO user_settings (user_id) SELECT id FROM users;
 
 INSERT INTO competition_registrations (competition_id, user_id, fee_paid, status) VALUES (1, 2, 1, 'registered');
+
+-- "Top Schools This Week": the design's figures, as last week's snapshot.
+-- In real use School_model::refresh_week() computes these from quiz attempts.
+INSERT INTO school_weekly_scores (school_id, week_start, quizzes, average_score, total_score)
+SELECT id, DATE(NOW()) - INTERVAL WEEKDAY(NOW()) DAY, q, avg_s, tot FROM (
+  SELECT 1 id, 412 q, 89.247 avg_s, 9876 tot UNION ALL
+  SELECT 4,    388,   88.963,       9312     UNION ALL
+  SELECT 5,    351,   87.810,       8644     UNION ALL
+  SELECT 6,    344,   86.532,       8765     UNION ALL
+  SELECT 7,    301,   85.914,       7402     UNION ALL
+  SELECT 3,    120,   76.432,       2210     UNION ALL
+  SELECT 2,     95,   71.200,       1530) x;
+
+-- "What Students Say": the design's three sample cards. DEMO ONLY. Real
+-- testimonials need a real student and recorded guardian consent.
+INSERT INTO testimonials (student_name, class_label, school_name, quote, rating, photo, is_published, sort_order) VALUES
+('Rafi',   'Class 5', 'Dhaka Collegiate School',              'খুব ভালো লাগছে। প্রশ্নগুলো স্কুলের বইয়ের সাথে মিলে যায়।',          5, 'img/design/student-1.jpg', 1, 1),
+('Nusrat', 'Class 6', 'Chattogram Govt. Girls\' High School', 'ভুল করলে সাথে সাথে ব্যাখ্যা পাওয়া যায়। এতে অনেক শেখা হয়।',      5, 'img/design/student-2.jpg', 1, 2),
+('Samiul', 'Class 8', 'Rajshahi Model School',                'প্র্যাকটিস, পয়েন্ট আর র‍্যাঙ্কিং আছে, তাই নিয়মিত পড়তে ইচ্ছে করে।', 5, 'img/design/student-3.jpg', 1, 3);
+
+-- Competition dates as shown on the dashboard design (12).
+UPDATE competitions SET final_at = '2026-11-20 10:00:00' WHERE id = 1;

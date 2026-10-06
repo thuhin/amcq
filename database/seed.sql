@@ -37,7 +37,11 @@ INSERT INTO badges (code, name, description, icon, category) VALUES
 ('proofreader',   'Proofreader',    'First approved correction',    'pencil-check', 'correction'),
 ('first_streak',  'Streak Starter', 'Completed your first 25-quiz streak', 'flame', 'streak'),
 ('chapter_master','Chapter Master', 'Mastered a chapter',           'book-check',   'mastery'),
-('finalist',      'National Finalist','Qualified for the final round','trophy',     'competition');
+('finalist',      'National Finalist','Qualified for the final round','trophy',     'competition'),
+-- Achievements shown on the dashboard (design 12).
+('seven_day_streak',        '7-Day Streak',          'Practised on 7 days in a row',          'flame',  'streak'),
+('subject_50_mcqs',         '50 MCQs',               'Answered 50 questions in one subject',  'file',   'practice'),
+('competition_participant', 'Competition Participant','Registered for the national competition','trophy','competition');
 
 -- ---------------------------------------------------------------------------
 --  Curriculum. Bangla medium is live; the other two are "Coming Soon" in the
@@ -56,13 +60,13 @@ INSERT INTO classes (id, medium_id, name, slug, sort_order, is_active) VALUES
 (5, 1, 'Class 9',  'class-9',  9,  0),
 (6, 1, 'Class 10', 'class-10', 10, 0);
 
-INSERT INTO subjects (id, class_id, name, name_bn, slug, icon, sort_order) VALUES
-(1, 1, 'Mathematics', 'গণিত', 'mathematics', 'calculator', 1),
-(2, 1, 'Science', 'বিজ্ঞান', 'science', 'atom', 2),
-(3, 1, 'Bangla', 'বাংলা', 'bangla', 'book', 3),
-(4, 1, 'English', 'ইংরেজি', 'english', 'type', 4),
-(5, 1, 'Islam & Moral Education', 'ইসলাম ও নৈতিক শিক্ষা', 'islam-moral', 'people', 5),
-(6, 1, 'Bangladesh & Global Studies', 'বাংলাদেশ ও বিশ্বপরিচয়', 'bgs', 'globe', 6);
+INSERT INTO subjects (id, class_id, name, name_bn, slug, icon, sort_order, description) VALUES
+(1, 1, 'Mathematics', 'গণিত', 'mathematics', 'calculator', 1, 'NCTB প্রাথমিক গণিত, পঞ্চম শ্রেণি। প্রতিটি অধ্যায়ের টপিকভিত্তিক MCQ, ধাপে ধাপে ব্যাখ্যাসহ।'),
+(2, 1, 'Science', 'বিজ্ঞান', 'science', 'atom', 2, 'NCTB প্রাথমিক বিজ্ঞান, পঞ্চম শ্রেণি।'),
+(3, 1, 'Bangla', 'বাংলা', 'bangla', 'book', 3, 'NCTB আমার বাংলা বই, পঞ্চম শ্রেণি।'),
+(4, 1, 'English', 'ইংরেজি', 'english', 'type', 4, 'NCTB English For Today, Class 5.'),
+(5, 1, 'Islam & Moral Education', 'ইসলাম ও নৈতিক শিক্ষা', 'islam-moral', 'people', 5, 'NCTB ইসলাম ও নৈতিক শিক্ষা, পঞ্চম শ্রেণি।'),
+(6, 1, 'Bangladesh & Global Studies', 'বাংলাদেশ ও বিশ্বপরিচয়', 'bgs', 'globe', 6, 'NCTB প্রাথমিক বাংলাদেশ ও বিশ্বপরিচয়, পঞ্চম শ্রেণি।');
 
 -- Mathematics, NCTB Class 5 (প্রাথমিক গণিত, পঞ্চম শ্রেণি).
 -- CONTENT TEAM: verify names and order against the current printed book
@@ -89,6 +93,15 @@ INSERT INTO topics (chapter_id, code, name, summary, sort_order) VALUES
 (6, '6.3', 'ভগ্নাংশের তুলনা',         'ভগ্নাংশ বড় না ছোট নির্ণয়',              3),
 (6, '6.4', 'ভগ্নাংশের যোগ ও বিয়োগ',   'ভগ্নাংশ যোগ ও বিয়োগের নিয়ম',            4),
 (6, '6.5', 'মিশ্র ভগ্নাংশ',           'মিশ্র ভগ্নাংশ ও অপ্রকৃত ভগ্নাংশের রূপান্তর', 5);
+
+-- Practice starts from a topic row (design 11), so every playable chapter
+-- has topics. Topics without a full 5/3/2 set show "Coming Soon".
+INSERT INTO topics (chapter_id, code, name, summary, sort_order) VALUES
+(7, '7.1', 'দশমিক ভগ্নাংশের মৌলিক অনুশীলন', 'ধারণা, স্থানীয় মান ও চার প্রক্রিয়া', 1),
+(7, '7.2', 'দশমিকের গুণ ও ভাগ',           'দশমিক সংখ্যার গুণ ও ভাগের নিয়ম',     2),
+(7, '7.3', 'দশমিকের ব্যবহার',             'টাকা ও পরিমাপে দশমিক',               3),
+(8, '8.1', 'শতকরার মৌলিক অনুশীলন',         'শতকরা, ভগ্নাংশ ও দশমিকের রূপান্তর',  1),
+(8, '8.2', 'শতকরার ব্যবহার',              'লাভ-ক্ষতি ও ছাড়ের হিসাব',             2);
 
 -- Other subjects: chapter rows exist so the selector and counts work, but the
 -- names are placeholders for the content team to replace from the NCTB books.

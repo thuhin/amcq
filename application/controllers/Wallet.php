@@ -19,7 +19,7 @@ class Wallet extends MY_Controller
 			'transactions' => $this->Wallet_model->transactions($uid),
 			'presets'      => self::PRESETS,
 			'simulated'    => $this->simulated(),
-		), array('title' => 'Wallet', 'nav' => 'wallet'));
+		), array('title' => 'Wallet', 'nav' => 'wallet', 'app' => TRUE));
 	}
 
 	/**

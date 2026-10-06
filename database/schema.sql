@@ -57,6 +57,7 @@ CREATE TABLE subjects (
     name_bn         VARCHAR(100) NULL,
     slug            VARCHAR(100) NOT NULL,
     icon            VARCHAR(40)  NULL,
+    description     TEXT         NULL,              -- "About Subject" tab (design 11)
     sort_order      SMALLINT     NOT NULL DEFAULT 0,
     is_active       TINYINT(1)   NOT NULL DEFAULT 1,
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -297,6 +298,9 @@ CREATE TABLE quiz_attempts (
     device_hash     VARCHAR(64)   NULL,
     chapter_id      SMALLINT UNSIGNED NOT NULL,
     topic_id        INT UNSIGNED  NULL,             -- NULL = whole-chapter quiz
+    -- 'hard' = "Try Harder Quiz" on the result page (design 10): same
+    -- length and rules, weighted toward hard questions.
+    mode            ENUM('standard','hard') NOT NULL DEFAULT 'standard',
     total_questions TINYINT UNSIGNED NOT NULL DEFAULT 10,
     score           TINYINT UNSIGNED NULL,          -- correct count
     percentage      DECIMAL(5,2)  NULL,
@@ -313,6 +317,10 @@ CREATE TABLE quiz_attempts (
     completed_at    TIMESTAMP     NULL,
     time_limit_seconds INT UNSIGNED NULL,           -- NULL = untimed practice
     duration_seconds INT UNSIGNED NULL,             -- 'Time Taken' on result
+    -- Timer pause (design 08). Paused time is excluded from the limit and
+    -- from Time Taken; paused_at is set while the quiz is paused.
+    paused_at       TIMESTAMP     NULL,
+    paused_seconds  INT UNSIGNED  NOT NULL DEFAULT 0,
     points_earned   SMALLINT UNSIGNED NOT NULL DEFAULT 0,
     KEY idx_attempt_user (user_id, completed_at),
     KEY idx_attempt_user_chapter (user_id, chapter_id, completed_at),
@@ -434,7 +442,7 @@ CREATE TABLE badges (
     name            VARCHAR(80)  NOT NULL,
     description     VARCHAR(255) NULL,
     icon            VARCHAR(40)  NULL,
-    category        ENUM('tier','correction','streak','competition','mastery') NOT NULL
+    category        ENUM('tier','correction','streak','competition','mastery','practice') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 DROP TABLE IF EXISTS user_badges;
@@ -490,6 +498,45 @@ CREATE TABLE user_activity (
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_activity_user (user_id, created_at),
     CONSTRAINT fk_activity_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- "What Students Say" (homepage designs 01-07). Published rows only are
+-- shown, and the section is hidden when there are none: testimonials must
+-- come from real students with their consent, never be made up.
+DROP TABLE IF EXISTS testimonials;
+CREATE TABLE testimonials (
+    id              INT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    user_id         INT UNSIGNED NULL,
+    student_name    VARCHAR(100) NOT NULL,
+    class_label     VARCHAR(30)  NOT NULL,          -- 'Class 5'
+    school_name     VARCHAR(200) NULL,
+    quote           VARCHAR(500) NOT NULL,
+    rating          TINYINT UNSIGNED NOT NULL DEFAULT 5,
+    photo           VARCHAR(255) NULL,              -- path under asset/
+    consent_at      TIMESTAMP    NULL,              -- guardian consent recorded
+    is_published    TINYINT(1)   NOT NULL DEFAULT 0,
+    sort_order      SMALLINT     NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT ck_testimonial_rating CHECK (rating BETWEEN 1 AND 5),
+    CONSTRAINT fk_testimonial_user FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- "Top Schools This Week" (homepage designs 02-07). Written by the weekly
+-- job (School_model::refresh_week). average_score = mean quiz percentage,
+-- dividing by quizzes taken, not by students (blueprint v2.0 fix);
+-- total_score = correct answers summed.
+DROP TABLE IF EXISTS school_weekly_scores;
+CREATE TABLE school_weekly_scores (
+    school_id       INT UNSIGNED NOT NULL,
+    week_start      DATE         NOT NULL,
+    quizzes         INT UNSIGNED NOT NULL DEFAULT 0,
+    average_score   DECIMAL(6,3) NOT NULL DEFAULT 0,
+    total_score     INT UNSIGNED NOT NULL DEFAULT 0,
+    PRIMARY KEY (school_id, week_start),
+    KEY idx_week_avg (week_start, average_score DESC),
+    KEY idx_week_total (week_start, total_score DESC),
+    CONSTRAINT fk_sws_school FOREIGN KEY (school_id) REFERENCES schools(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ===========================================================================

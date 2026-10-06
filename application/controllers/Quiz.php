@@ -37,7 +37,8 @@ class Quiz extends MY_Controller
 		// Light device fingerprint, the v1.1 mitigation against farming the
 		// guest flow by clearing cookies.
 		$device = hash('sha256', $this->input->ip_address() . '|' . $this->input->user_agent());
-		$result = $this->Quiz_model->start($chapter['id'], $topic_id, $user_id, $this->guest_token(), $device);
+		$mode = $this->input->post('mode') === 'hard' ? 'hard' : 'standard';
+		$result = $this->Quiz_model->start($chapter['id'], $topic_id, $user_id, $this->guest_token(), $device, $mode);
 
 		if ($result['ok']) {
 			redirect('quiz/' . $result['attempt_id']);
@@ -89,8 +90,12 @@ class Quiz extends MY_Controller
 			'chapter'      => $chapter,
 			'topic'        => $attempt['topic_id'] ? $this->Curriculum_model->topic($attempt['topic_id']) : NULL,
 			'seconds_left' => $this->Quiz_model->seconds_left($attempt),
+			'paused'       => (bool) $attempt['paused_at'],
 			'answered'     => count(array_filter(array_column($items, 'selected_option_id'))),
-		), array('title' => 'Question ' . $q . ' of ' . count($items), 'bare' => TRUE));
+			'attempts'     => $this->Quiz_model->chapter_attempts($attempt),
+			'coverage'     => $this->Quiz_model->chapter_coverage($this->user ? $this->user['id'] : NULL, $chapter['id']),
+		), array('title' => 'Question ' . $q . ' of ' . count($items), 'nav' => 'practice',
+		         'crumbs' => $this->crumbs($chapter, 'Practice Quiz')));
 	}
 
 	public function answer($id)
@@ -121,6 +126,23 @@ class Quiz extends MY_Controller
 		redirect('quiz/' . $id . '?q=' . $target);
 	}
 
+	/** Pause / resume the timer (design 08). */
+	public function pause($id)
+	{
+		$this->require_post();
+		$attempt = $this->load_attempt($id);
+		$this->Quiz_model->pause($attempt);
+		redirect('quiz/' . $id . '?q=' . (int) $this->input->post('position'));
+	}
+
+	public function resume($id)
+	{
+		$this->require_post();
+		$attempt = $this->load_attempt($id);
+		$this->Quiz_model->resume($attempt);
+		redirect('quiz/' . $id . '?q=' . (int) $this->input->post('position'));
+	}
+
 	public function submit($id)
 	{
 		$this->require_post();
@@ -146,6 +168,9 @@ class Quiz extends MY_Controller
 			'breakdown' => $this->Quiz_model->breakdown($items),
 			'wrong'     => count(array_filter($items, function ($i) { return ! $i['is_correct']; })),
 			'next_chapter' => $this->next_chapter($chapter),
+			'coverage'  => $this->Quiz_model->chapter_coverage($this->user ? $this->user['id'] : NULL, $chapter['id']),
+			// "Try Harder Quiz" needs enough hard questions in the chapter.
+			'can_harder' => (bool) $this->Quiz_model->plan($this->Curriculum_model->question_mix($chapter['id']), 'hard'),
 		);
 		if ($this->user) {
 			$this->load->model('Points_model');
@@ -155,7 +180,6 @@ class Quiz extends MY_Controller
 			$data['rank_change'] = $this->Points_model->rank_change($uid);
 			$data['streak']      = $this->Quiz_model->streak($uid);
 			$data['progress']    = isset($progress[$chapter['id']]) ? $progress[$chapter['id']] : NULL;
-			$data['topics']      = $this->Curriculum_model->topics_with_status($chapter['id'], $uid);
 		}
 		$this->render('quiz/result', $data, array(
 			'title' => 'Result', 'nav' => 'practice',
@@ -184,13 +208,20 @@ class Quiz extends MY_Controller
 		$current = $current ?: ($shown ? $shown[0] : NULL);
 		$chapter = $this->Curriculum_model->chapter($attempt['chapter_id']);
 
-		$this->render('quiz/review', array(
+		$data = array(
 			'attempt' => $attempt, 'items' => $items, 'shown' => $shown, 'current' => $current,
 			'filter'  => $filter, 'chapter' => $chapter,
 			'correct' => (int) $attempt['score'], 'incorrect' => count($items) - (int) $attempt['score'],
-		), array(
+			'coverage' => $this->Quiz_model->chapter_coverage($this->user ? $this->user['id'] : NULL, $chapter['id']),
+		);
+		if ($this->user) {
+			$this->load->model('Points_model');
+			$data['rank'] = $this->Points_model->rank($this->user['id']);
+			$data['rank_change'] = $this->Points_model->rank_change($this->user['id']);
+		}
+		$this->render('quiz/review', $data, array(
 			'title' => 'Answer Review', 'nav' => 'practice',
-			'crumbs' => $this->crumbs($chapter, 'Answer Review'),
+			'crumbs' => $this->crumbs($chapter, 'Quiz Result'),
 		));
 	}
 
@@ -231,7 +262,7 @@ class Quiz extends MY_Controller
 			array('Home', ''), array('Practice', 'practice'),
 			array($chapter['class_name'], 'practice?class=' . $chapter['class_slug']),
 			array($chapter['subject_name'], 'practice/' . $chapter['class_slug'] . '/' . $chapter['subject_slug']),
-			array($chapter['name_bn'] ?: $chapter['name'], 'practice/' . $chapter['class_slug'] . '/' . $chapter['subject_slug'] . '?chapter=' . $chapter['slug']),
+			array('Chapter ' . (int) $chapter['chapter_no'], 'practice/' . $chapter['class_slug'] . '/' . $chapter['subject_slug'] . '?chapter=' . $chapter['slug']),
 			array($last, NULL),
 		);
 	}

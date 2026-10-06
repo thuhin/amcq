@@ -21,10 +21,10 @@
       </div>
     <?php else: ?>
       <ul class="grid grid--3">
-        <?php foreach ($subjects as $i => $s): ?>
+        <?php foreach ($subjects as $i => $s): list($ic, $col) = subject_style($s['slug']); ?>
         <li>
           <a class="amcq-card subject subject--lg" href="<?= site_url('practice/' . $class['slug'] . '/' . $s['slug']) ?>">
-            <span class="chip chip--lg chip--<?= array('green','blue','orange','purple','pink','amber')[$i % 6] ?>"><?= icon('book') ?></span>
+            <span class="round round--<?= $col ?>"><?= icon($ic) ?></span>
             <span class="subject__body">
               <strong><?= e($s['name']) ?></strong>
               <?php if ($s['name_bn']): ?><span class="amcq-muted"><?= e($s['name_bn']) ?></span><?php endif; ?>

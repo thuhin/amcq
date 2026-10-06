@@ -24,7 +24,7 @@ class Progress_model extends CI_Model
 	public function subjects($user_id)
 	{
 		return $this->db->query(
-			"SELECT s.id, s.name, s.icon, AVG(a.percentage) avg_p, COUNT(*) quizzes,
+			"SELECT s.id, s.name, s.slug, s.icon, AVG(a.percentage) avg_p, COUNT(*) quizzes,
 			        COUNT(DISTINCT a.chapter_id) chapters
 			 FROM quiz_attempts a
 			 JOIN chapters c ON c.id = a.chapter_id
@@ -54,7 +54,7 @@ class Progress_model extends CI_Model
 	/** Most recently practised chapter, for "Continue Practicing". */
 	public function continue_chapter($user_id)
 	{
-		return $this->db->select('p.*, c.name, c.name_bn, c.id AS chapter_id, c.slug AS chapter_slug, s.name AS subject_name, s.slug AS subject_slug, cl.name AS class_name, cl.slug AS class_slug')
+		return $this->db->select('p.*, c.name, c.name_bn, c.id AS chapter_id, c.chapter_no, c.slug AS chapter_slug, s.name AS subject_name, s.slug AS subject_slug, cl.name AS class_name, cl.slug AS class_slug')
 			->from('user_chapter_progress p')
 			->join('chapters c', 'c.id = p.chapter_id')
 			->join('subjects s', 's.id = c.subject_id')

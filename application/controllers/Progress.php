@@ -19,6 +19,6 @@ class Progress extends MY_Controller
 			'weak'     => $this->Progress_model->weak_chapters($uid, 10),
 			'streak'   => $this->Quiz_model->streak($uid),
 			'qualifying' => (int) $this->db->where('user_id', $uid)->where('counts_for_streak', 1)->count_all_results('quiz_attempts'),
-		), array('title' => 'My Progress', 'nav' => 'progress'));
+		), array('title' => 'My Progress', 'nav' => 'progress', 'app' => TRUE));
 	}
 }

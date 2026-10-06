@@ -22,7 +22,7 @@ class Correct_me extends MY_Controller
 			'requests'   => $this->Correction_model->mine($uid),
 			'approved'   => $this->Correction_model->approved_count($uid),
 			'milestones' => $this->Correction_model->milestones(),
-		), array('title' => 'Correct Me', 'nav' => 'progress'));
+		), array('title' => 'Correct Me', 'nav' => 'correct', 'app' => TRUE));
 	}
 
 	public function question($question_id)
@@ -54,6 +54,6 @@ class Correct_me extends MY_Controller
 		$this->render('correct_me/question', array(
 			'question' => $question, 'options' => $options,
 			'back'     => $this->input->get('back'),
-		), array('title' => 'Correct Me', 'nav' => 'progress'));
+		), array('title' => 'Correct Me', 'nav' => 'correct', 'app' => TRUE));
 	}
 }

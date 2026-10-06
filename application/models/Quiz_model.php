@@ -33,10 +33,15 @@ class Quiz_model extends CI_Model
 	 * @return array ['ok' => TRUE, 'attempt_id' => int]
 	 *            or ['ok' => FALSE, 'error' => 'not_playable'|'guest_limit'|'insufficient_balance']
 	 */
-	public function start($chapter_id, $topic_id, $user_id, $guest_token, $device_hash = NULL)
+	public function start($chapter_id, $topic_id, $user_id, $guest_token, $device_hash = NULL, $mode = 'standard')
 	{
-		$mix = $this->Curriculum_model->question_mix($chapter_id, $topic_id);
-		if ( ! $this->Curriculum_model->mix_is_playable($mix)) {
+		$mode = $mode === 'hard' ? 'hard' : 'standard';
+		if ($mode === 'hard') {
+			$topic_id = NULL;   // a harder set needs the whole chapter's pool
+		}
+		$available = $this->Curriculum_model->question_mix($chapter_id, $topic_id);
+		$plan = $this->plan($available, $mode);
+		if ( ! $plan) {
 			return array('ok' => FALSE, 'error' => 'not_playable');
 		}
 		if ( ! $user_id && $this->guest_attempt_count($guest_token) >= GUEST_FREE_QUIZZES) {
@@ -63,6 +68,7 @@ class Quiz_model extends CI_Model
 			'device_hash'        => $device_hash,
 			'chapter_id'         => $chapter_id,
 			'topic_id'           => $topic_id ?: NULL,
+			'mode'               => $mode,
 			'total_questions'    => QUIZ_QUESTION_COUNT,
 			'fee_charged'        => $user_id ? QUIZ_FEE_TAKA : 0,
 			'wallet_txn_id'      => $wallet_txn_id ?: NULL,
@@ -73,7 +79,7 @@ class Quiz_model extends CI_Model
 		// Easy, then medium, then hard: a student warms up before the hard
 		// questions instead of meeting one cold as question 1.
 		$position = 1;
-		foreach (array('easy' => QUIZ_MIX_EASY, 'medium' => QUIZ_MIX_MEDIUM, 'hard' => QUIZ_MIX_HARD) as $difficulty => $n) {
+		foreach ($plan as $difficulty => $n) {
 			foreach ($this->pick($chapter_id, $topic_id, $difficulty, $n, $user_id) as $question_id) {
 				$this->db->insert('quiz_attempt_answers', array(
 					'attempt_id' => $attempt_id, 'question_id' => $question_id, 'position' => $position++,
@@ -85,6 +91,48 @@ class Quiz_model extends CI_Model
 		return $this->db->trans_status()
 			? array('ok' => TRUE, 'attempt_id' => $attempt_id)
 			: array('ok' => FALSE, 'error' => 'failed');
+	}
+
+	/**
+	 * How many questions of each difficulty to serve, or NULL if the pool
+	 * cannot fill a quiz.
+	 *
+	 * Standard: exactly 5 easy / 3 medium / 2 hard (blueprint §9), and the
+	 * pool must have that many of each.
+	 *
+	 * Hard ("Try Harder Quiz", design 10): the same QUIZ_QUESTION_COUNT,
+	 * weighted the other way round, as many hard as the pool allows up to
+	 * QUIZ_MIX_EASY, then medium, topped up with easy. Scoring, fee and
+	 * streak rules are unchanged; only the selection differs.
+	 */
+	public function plan(array $available, $mode = 'standard')
+	{
+		if ($mode !== 'hard') {
+			$plan = array('easy' => QUIZ_MIX_EASY, 'medium' => QUIZ_MIX_MEDIUM, 'hard' => QUIZ_MIX_HARD);
+			foreach ($plan as $d => $n) {
+				if ($available[$d] < $n) {
+					return NULL;
+				}
+			}
+			return $plan;
+		}
+		$want = array('hard' => QUIZ_MIX_EASY, 'medium' => QUIZ_MIX_MEDIUM, 'easy' => QUIZ_MIX_HARD);
+		$take = array();
+		$left = QUIZ_QUESTION_COUNT;
+		foreach ($want as $d => $n) {
+			$take[$d] = min($n, $available[$d]);
+			$left -= $take[$d];
+		}
+		foreach (array('medium', 'easy', 'hard') as $d) {   // top up any shortfall
+			$extra = min($left, $available[$d] - $take[$d]);
+			$take[$d] += $extra;
+			$left -= $extra;
+		}
+		// Must still be meaningfully harder than a standard quiz.
+		if ($left > 0 || $take['hard'] <= QUIZ_MIX_HARD) {
+			return NULL;
+		}
+		return array('easy' => $take['easy'], 'medium' => $take['medium'], 'hard' => $take['hard']);
 	}
 
 	/**
@@ -140,8 +188,39 @@ class Quiz_model extends CI_Model
 		if ( ! $attempt['time_limit_seconds']) {
 			return NULL;
 		}
-		$elapsed = time() - strtotime($attempt['started_at']);
-		return max(0, (int) $attempt['time_limit_seconds'] - $elapsed);
+		return max(0, (int) $attempt['time_limit_seconds'] - $this->active_seconds($attempt));
+	}
+
+	/** Seconds the quiz has actually been running: paused time excluded. */
+	public function active_seconds(array $attempt)
+	{
+		$paused = (int) $attempt['paused_seconds'];
+		if ($attempt['paused_at']) {
+			$paused += time() - strtotime($attempt['paused_at']);
+		}
+		return max(0, time() - strtotime($attempt['started_at']) - $paused);
+	}
+
+	/**
+	 * Pause / resume the timer (design 08). While paused, answers are not
+	 * accepted, so pausing cannot be used to look things up mid-question
+	 * and then answer on the clock's dime.
+	 */
+	public function pause(array $attempt)
+	{
+		if ($attempt['status'] === 'in_progress' && ! $attempt['paused_at'] && $this->seconds_left($attempt) > 0) {
+			$this->db->update('quiz_attempts', array('paused_at' => date('Y-m-d H:i:s')), array('id' => $attempt['id']));
+		}
+	}
+
+	public function resume(array $attempt)
+	{
+		if ($attempt['paused_at']) {
+			$this->db->query(
+				'UPDATE quiz_attempts SET paused_seconds = paused_seconds + GREATEST(0, TIMESTAMPDIFF(SECOND, paused_at, NOW())), paused_at = NULL WHERE id = ? AND paused_at IS NOT NULL',
+				array($attempt['id'])
+			);
+		}
 	}
 
 	/**
@@ -193,7 +272,7 @@ class Quiz_model extends CI_Model
 	 */
 	public function save_answer(array $attempt, $position, $option_id, $marked_for_review)
 	{
-		if ($attempt['status'] !== 'in_progress' || $this->seconds_left($attempt) === 0) {
+		if ($attempt['status'] !== 'in_progress' || $attempt['paused_at'] || $this->seconds_left($attempt) === 0) {
 			return FALSE;
 		}
 		$row = $this->db->get_where('quiz_attempt_answers', array(
@@ -250,7 +329,7 @@ class Quiz_model extends CI_Model
 		$total = (int) $attempt['total_questions'];
 		$percentage = $total ? round($score * 100 / $total, 2) : 0;
 
-		$elapsed = time() - strtotime($attempt['started_at']);
+		$elapsed = $this->active_seconds($attempt);
 		if ($attempt['time_limit_seconds']) {
 			$elapsed = min($elapsed, (int) $attempt['time_limit_seconds']);
 		}
@@ -265,6 +344,7 @@ class Quiz_model extends CI_Model
 			'counts_for_streak' => $counts_for_streak ? 1 : 0,
 			'completed_at'      => date('Y-m-d H:i:s'),
 			'duration_seconds'  => $elapsed,
+			'paused_at'         => NULL,
 		), array('id' => $attempt_id));
 
 		$this->db->query(
@@ -283,6 +363,7 @@ class Quiz_model extends CI_Model
 				$earned += $this->apply_streak($user_id, $attempt_id);
 			}
 			$this->db->update('quiz_attempts', array('points_earned' => $earned), array('id' => $attempt_id));
+			$this->award_practice_badges($user_id, $chapter);
 			$this->Activity_model->log($user_id, 'quiz',
 				'Scored ' . pct($percentage) . ' in ' . ($chapter['name_bn'] ?: $chapter['name']),
 				$chapter['subject_name'] . ' · ' . $score . '/' . $total . ' correct');
@@ -385,6 +466,86 @@ class Quiz_model extends CI_Model
 			'best_streak_quizzes'       => $best,
 		), array('user_id' => $user_id));
 		return $earned;
+	}
+
+	/**
+	 * Achievement badges on the dashboard (design 12). Badges are
+	 * recognition only: they never add Academic Points.
+	 */
+	private function award_practice_badges($user_id, array $chapter)
+	{
+		$badge = function ($code) use ($user_id) {
+			$this->db->query('INSERT IGNORE INTO user_badges (user_id, badge_id) SELECT ?, id FROM badges WHERE code = ?', array($user_id, $code));
+		};
+		if ($this->day_streak($user_id) >= 7) {
+			$badge('seven_day_streak');
+		}
+		$answered = (int) $this->db->query(
+			"SELECT COUNT(*) n FROM quiz_attempt_answers qa
+			 JOIN quiz_attempts a ON a.id = qa.attempt_id
+			 JOIN chapters c ON c.id = a.chapter_id
+			 WHERE a.user_id = ? AND a.status = 'completed' AND c.subject_id = ? AND qa.selected_option_id IS NOT NULL",
+			array($user_id, $chapter['subject_id'])
+		)->row()->n;
+		if ($answered >= 50) {
+			$badge('subject_50_mcqs');
+		}
+	}
+
+	/** Consecutive days, ending today or yesterday, with a completed quiz. */
+	public function day_streak($user_id)
+	{
+		$days = array_column($this->db->query(
+			"SELECT DISTINCT DATE(completed_at) d FROM quiz_attempts
+			 WHERE user_id = ? AND status = 'completed' ORDER BY d DESC LIMIT 400",
+			array($user_id)
+		)->result_array(), 'd');
+		$expect = date('Y-m-d');
+		if ($days && $days[0] !== $expect) {
+			$expect = date('Y-m-d', strtotime('-1 day'));   // today not practised yet
+		}
+		$n = 0;
+		foreach ($days as $d) {
+			if ($d !== $expect) {
+				break;
+			}
+			$n++;
+			$expect = date('Y-m-d', strtotime($expect . ' -1 day'));
+		}
+		return $n;
+	}
+
+	/**
+	 * "12 / 20 questions completed" (designs 08, 10, 12): distinct published
+	 * questions in the chapter this student has answered correctly at least
+	 * once, over all published questions in the chapter.
+	 */
+	public function chapter_coverage($user_id, $chapter_id)
+	{
+		$total = (int) $this->db->where('chapter_id', $chapter_id)->where('status', 'published')->count_all_results('questions');
+		$done = 0;
+		if ($user_id) {
+			$done = (int) $this->db->query(
+				"SELECT COUNT(DISTINCT qa.question_id) n FROM quiz_attempt_answers qa
+				 JOIN quiz_attempts a ON a.id = qa.attempt_id
+				 JOIN questions q ON q.id = qa.question_id
+				 WHERE a.user_id = ? AND a.chapter_id = ? AND qa.is_correct = 1 AND q.status = 'published'",
+				array($user_id, $chapter_id)
+			)->row()->n;
+		}
+		return array('done' => $done, 'total' => $total, 'pct' => $total ? (int) round($done * 100 / $total) : 0);
+	}
+
+	/** "Attempts 3/∞" on the quiz page: this student's attempts at the chapter. */
+	public function chapter_attempts(array $attempt)
+	{
+		$this->db->where('chapter_id', $attempt['chapter_id']);
+		if ($attempt['user_id']) {
+			$this->db->where('user_id', $attempt['user_id']);
+		} else {
+			$this->db->where('session_id', $attempt['session_id']);
+		}
+		return (int) $this->db->count_all_results('quiz_attempts');
 	}
 
 	/* ------------------------------------------------------------------ */

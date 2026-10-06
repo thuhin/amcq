@@ -79,9 +79,13 @@ class MY_Controller extends CI_Controller
 			'title'  => 'AcademicMCQ',
 			'nav'    => '',
 			'crumbs' => array(),
-			'bare'   => FALSE,
-			'css'    => array(),
+			'app'    => FALSE,   // TRUE = signed-in page with the dashboard sidebar (design 12)
 		), $page);
+		$data['unread'] = 0;
+		if ($this->user) {
+			$data['unread'] = (int) $this->db->where('user_id', $this->user['id'])
+				->where('read_at IS NULL', NULL, FALSE)->count_all_results('notifications');
+		}
 
 		$this->load->view('layout/header', $data);
 		$this->load->view($view, $data);

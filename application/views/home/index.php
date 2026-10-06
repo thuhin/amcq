@@ -1,180 +1,216 @@
-<?php defined('BASEPATH') OR exit('No direct script access allowed'); ?>
-
-<section class="hero">
-  <div class="amcq-container hero__inner">
-    <div class="hero__copy">
-      <h1 class="hero__title">Better Practice<br><span>Brighter Future</span></h1>
-      <p class="hero__bangla">অনুশীলন • শেখা • প্রতিযোগিতা</p>
-      <p class="hero__lede">Curriculum-based MCQ practice for Class 5 to SSC. Learn with instant explanations, build your rank, and join the national competition.</p>
-      <div class="hero__cta">
-        <a class="amcq-btn amcq-btn--primary amcq-btn--lg" href="<?= site_url('practice') ?>">Start Practicing <?= icon('arrow-right') ?></a>
-        <a class="amcq-btn amcq-btn--secondary amcq-btn--lg" href="<?= site_url('how-it-works') ?>"><?= icon('play') ?> See How It Works</a>
+<?php defined('BASEPATH') OR exit('No direct script access allowed');
+$pool = $competition ? bd_number($competition['prize_pool']) : '';
+list($sel_icon, $sel_color) = subject_style($selected['slug']);
+$sel_ready = $selected['playable_chapters'] > 0;
+$medium_icons = array('bangla-medium' => 'book-open', 'english-version' => 'ab', 'english-medium' => 'globe');
+?>
+<!-- ============ Hero (design 07) ============ -->
+<section class="home-hero">
+  <div class="amcq-container home-hero__inner">
+    <div class="home-hero__copy">
+      <p class="pill"><span class="pill__star"><?= icon('star') ?></span> Bangladesh's First Curriculum-Based MCQ Platform</p>
+      <h1 class="home-hero__title">Better Practice<br><span>Brighter Future</span></h1>
+      <p class="home-hero__bangla">অনুশীলন • শেখা • প্রতিযোগিতা</p>
+      <p class="home-hero__lede">Curriculum-based MCQ practice for Class 5 to SSC. Learn with instant explanations, build your rank, and join the national competition.</p>
+      <div class="home-hero__cta">
+        <a class="amcq-btn amcq-btn--primary amcq-btn--lg" href="#start">Start Practicing Now <?= icon('arrow-right') ?></a>
+        <a class="amcq-btn amcq-btn--secondary amcq-btn--lg" href="<?= site_url('how-it-works#video') ?>"><span class="play-dot"><?= icon('play') ?></span> Watch Video</a>
       </div>
-      <ul class="hero__features">
-        <li><span class="chip chip--green"><?= icon('file') ?></span>Only Tk <?= number_format(QUIZ_FEE_TAKA) ?><br>per quiz</li>
-        <li><span class="chip chip--purple"><?= icon('bulb') ?></span>Learn with<br>explanations</li>
-        <li><span class="chip chip--amber"><?= icon('trophy') ?></span>Build your<br>lifetime rank</li>
-        <li><span class="chip chip--pink"><?= icon('users') ?></span>Join national<br>competition</li>
+      <ul class="feature-row">
+        <li><span class="round round--green"><?= icon('calculator') ?></span>Only<br>Tk <?= number_format(QUIZ_FEE_TAKA) ?> per quiz</li>
+        <li><span class="round round--purple"><?= icon('bulb') ?></span>Learn with<br>explanations</li>
+        <li><span class="round round--amber"><?= icon('trophy') ?></span>Build your<br>lifetime rank</li>
+        <li><span class="round round--pink"><?= icon('users') ?></span>Join national<br>competition</li>
       </ul>
     </div>
-
-    <!-- Product visual, not a photo (guideline §4.1, §13): what a student builds. -->
-    <div class="hero__visual" aria-hidden="true">
-      <div class="float-card float-card--score"><span class="chip chip--green"><?= icon('target') ?></span><div><small>Mathematics</small><strong class="amcq-score">85%</strong><em class="ok">Excellent!</em></div></div>
-      <div class="float-card float-card--rank"><span class="chip chip--amber"><?= icon('trophy') ?></span><div><small>Your Rank</small><strong>#1,250</strong><em>Bangladesh</em></div></div>
-      <div class="float-card float-card--streak"><span class="chip chip--orange"><?= icon('flame') ?></span><div><small>Streak</small><strong>12</strong><em>quizzes</em></div></div>
-      <div class="float-card float-card--points"><span class="chip chip--pink"><?= icon('shield') ?></span><div><small>Academic Points</small><strong class="amcq-points">530</strong><em>Silver Scholar</em></div></div>
-      <div class="mcq-card">
-        <p class="mcq-card__q">নিচের ভগ্নাংশগুলোর মধ্যে কোনটি বৃহত্তম?</p>
-        <span class="mcq-card__opt is-picked"><b>A</b><?= math_text('3/4') ?></span>
-        <span class="mcq-card__opt"><b>B</b><?= math_text('5/8') ?></span>
-        <span class="mcq-card__opt"><b>C</b><?= math_text('2/3') ?></span>
-      </div>
+    <div class="home-hero__art">
+      <img src="<?= asset('img/design/hero.jpg') ?>" width="570" height="385"
+           alt="A student practising on a laptop, with score, streak, rank and points cards">
     </div>
   </div>
 </section>
 
+<!-- ============ Four-step selector ============ -->
+<section class="amcq-container" id="start">
+  <div class="selector">
+    <div class="selector__head">
+      <span class="chip chip--blue chip--lg"><?= icon('book-open') ?></span>
+      <div>
+        <h2>Start Practicing — Select Your Curriculum, Class and Subject</h2>
+        <p class="amcq-muted">Follow the NCTB syllabus and practice chapter-wise MCQs with instant explanations.</p>
+      </div>
+    </div>
+
+    <div class="selector__steps">
+      <div class="step step--curriculum">
+        <h3 class="step__title step__title--ribbon"><b>1</b> Choose Your Curriculum</h3>
+        <ul class="medium-cards">
+          <?php foreach ($mediums as $m): ?>
+          <li class="medium-card<?= $m['is_active'] ? ' is-selected' : ' is-locked' ?>">
+            <?php if ($m['is_active']): ?><span class="medium-card__check" aria-label="Selected"><?= icon('check') ?></span>
+            <?php else: ?><span class="medium-card__lock" aria-hidden="true"><?= icon('lock') ?></span><?php endif; ?>
+            <span class="medium-card__icon"><?= icon(isset($medium_icons[$m['slug']]) ? $medium_icons[$m['slug']] : 'book') ?></span>
+            <strong><?= e($m['name']) ?></strong>
+            <small><?= e($m['description']) ?></small>
+            <?php if ( ! $m['is_active']): ?><span class="soon-tag">Coming Soon</span><?php endif; ?>
+          </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3 class="step__title"><b>2</b> Select Your Class</h3>
+        <ul class="pick-list">
+          <?php foreach ($classes as $c): ?>
+            <li>
+              <?php if ($c['is_active']): ?>
+                <a class="pick-row is-selected" href="<?= site_url('?subject=' . $selected['slug'] . '#start') ?>" aria-current="true">
+                  <span class="pick-row__icon pick-row__icon--blue"><?= icon('file') ?></span><span><?= e($c['name']) ?></span><?= icon('arrow-right', 'pick-row__go') ?></a>
+              <?php else: ?>
+                <span class="pick-row is-locked" aria-disabled="true"><span><?= e($c['name']) ?></span><?= icon('lock', 'pick-row__go') ?><span class="sr-only">Coming soon</span></span>
+              <?php endif; ?>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+
+      <div class="step">
+        <h3 class="step__title"><b>3</b> Choose a Subject</h3>
+        <ul class="pick-list" data-subjects>
+          <?php foreach ($subjects as $s): list($ic, $col) = subject_style($s['slug']); $on = $s['id'] === $selected['id']; ?>
+            <li>
+              <a class="pick-row<?= $on ? ' is-selected' : '' ?>" href="<?= site_url('?subject=' . $s['slug'] . '#start') ?>"
+                 data-subject="<?= e($s['slug']) ?>" data-name="<?= e($s['name']) ?>" data-icon="<?= $ic ?>" data-color="<?= $col ?>"
+                 data-ready="<?= $s['playable_chapters'] ? 1 : 0 ?>" data-url="<?= site_url('practice/' . $class['slug'] . '/' . $s['slug']) ?>"<?= $on ? ' aria-current="true"' : '' ?>>
+                <span class="pick-row__icon pick-row__icon--<?= $col ?>"><?= icon($ic) ?></span><span><?= e($s['name']) ?></span><?= icon('arrow-right', 'pick-row__go') ?></a>
+            </li>
+          <?php endforeach; ?>
+        </ul>
+      </div>
+
+      <div class="step step--go" data-go>
+        <h3 class="step__title"><b>4</b> Start Practicing</h3>
+        <div class="go-card">
+          <span class="go-card__art" aria-hidden="true"><?= icon('checklist') ?><?= icon('clock', 'go-card__clock') ?></span>
+          <strong data-go-title><?= e($class['name']) ?> • <?= e($selected['name']) ?></strong>
+          <span data-go-sub><?= $sel_ready ? 'Chapter-wise MCQs' : 'Questions coming soon' ?></span>
+          <span>Only Tk <?= number_format(QUIZ_FEE_TAKA) ?> per quiz</span>
+          <a class="amcq-btn amcq-btn--primary" data-go-link href="<?= site_url('practice/' . $class['slug'] . '/' . $selected['slug']) ?>">Start Practicing Now <?= icon('arrow-right') ?></a>
+        </div>
+      </div>
+    </div>
+    <!-- Mobile (design 04): one full-width call to action under the steps. -->
+    <a class="amcq-btn amcq-btn--primary amcq-btn--block amcq-btn--lg selector__mobile-cta" data-go-link href="<?= site_url('practice/' . $class['slug'] . '/' . $selected['slug']) ?>">
+      <span>Start Practice for <?= e($class['name']) ?> - <span data-go-name><?= e($selected['name']) ?></span></span> <?= icon('arrow-right') ?></a>
+  </div>
+</section>
+
+<!-- ============ Stats strip (real figures) ============ -->
 <section class="amcq-container">
-  <ul class="stats-strip">
-    <li><span class="chip chip--blue"><?= icon('users') ?></span><div><strong><?= points($stats['questions']) ?>+</strong><small>Quality MCQs (Class 5 launch)</small></div></li>
-    <li><span class="chip chip--blue"><?= icon('book') ?></span><div><strong><?= (int) $stats['subjects'] ?></strong><small>Subjects</small></div></li>
-    <li><span class="chip chip--blue"><?= icon('school') ?></span><div><strong><?= e($class['name']) ?> (Launch)</strong><small>More classes coming soon</small></div></li>
+  <ul class="stats-bar">
+    <li><span class="chip chip--blue chip--lg"><?= icon('users') ?></span><div><strong><?= number_format($stats['questions']) ?>+</strong><span>High-quality MCQs</span><span>(<?= e($class['name']) ?> - initial launch)</span></div></li>
+    <li><span class="chip chip--blue chip--lg"><?= icon('book-open') ?></span><div><strong><?= (int) $stats['subjects'] ?></strong><span>Subjects</span></div></li>
+    <li><span class="chip chip--blue chip--lg"><?= icon('users') ?></span><div><small>For</small><strong><?= e($class['name']) ?> (Launch)</strong><span>More classes coming soon</span></div></li>
     <?php if ($competition): ?>
-    <li><span class="chip chip--blue"><?= icon('trophy') ?></span><div><strong><?= (int) $winners ?> Winners · <?= str_replace('.00', '', taka($competition['prize_pool'])) ?></strong><small>National Competition Prize Pool</small></div></li>
+    <li><span class="chip chip--blue chip--lg"><?= icon('trophy') ?></span><div><strong><?= (int) $winners ?> Winners</strong><strong>Tk <?= $pool ?></strong><span>National Competition Prize Pool</span></div></li>
     <?php endif; ?>
   </ul>
 </section>
 
-<section class="section">
-  <div class="amcq-container">
-    <h2>Choose Your Curriculum / Medium</h2>
-    <p class="amcq-muted">Select your education medium to see relevant classes, subjects and chapters.</p>
-    <ul class="grid grid--3">
-      <?php foreach ($mediums as $m): ?>
-      <li class="amcq-card pick <?= $m['is_active'] ? 'pick--active' : 'pick--soon' ?>">
-        <span class="chip chip--blue chip--lg"><?= icon($m['is_active'] ? 'book' : 'lock') ?></span>
-        <div>
-          <strong class="pick__title"><?= e($m['name']) ?></strong>
-          <span class="amcq-muted pick__desc"><?= e($m['description']) ?></span>
-          <span class="badge <?= $m['is_active'] ? 'badge--primary' : 'badge--muted' ?>"><?= $m['is_active'] ? 'Available Now' : 'Coming Soon' ?></span>
-        </div>
-      </li>
-      <?php endforeach; ?>
-    </ul>
-  </div>
-</section>
-
-<section class="section section--tight">
-  <div class="amcq-container">
-    <h2>Choose Your Class and Start Practicing</h2>
-    <p class="amcq-muted">Based on the NCTB curriculum (Bangla medium).</p>
-    <ul class="grid grid--6">
-      <?php foreach ($classes as $c): ?>
-      <li>
-        <?php if ($c['is_active']): ?>
-          <a class="amcq-card pick pick--active pick--row" href="<?= site_url('practice?class=' . $c['slug']) ?>">
-            <strong><?= e($c['name']) ?></strong><span class="pick__meta">Start Now <?= icon('arrow-right') ?></span>
-          </a>
-        <?php else: ?>
-          <!-- Not a link: a disabled link is still focusable and announced as one. -->
-          <div class="amcq-card pick pick--soon pick--row" aria-disabled="true">
-            <strong><?= e($c['name']) ?></strong><span class="pick__meta"><?= icon('lock') ?> Coming Soon</span>
-          </div>
-        <?php endif; ?>
-      </li>
-      <?php endforeach; ?>
-    </ul>
-  </div>
-</section>
-
-<section class="section section--tight">
-  <div class="amcq-container">
-    <div class="section__head">
-      <div><h2>Popular Subjects (<?= e($class['name']) ?>)</h2><p class="amcq-muted">Select a subject to see chapters and start practicing.</p></div>
-      <a class="link-arrow" href="<?= site_url('practice') ?>">View All Subjects <?= icon('arrow-right') ?></a>
-    </div>
-    <ul class="grid grid--3">
-      <?php foreach ($subjects as $i => $s): ?>
-      <li>
-        <a class="amcq-card subject" href="<?= site_url('practice/' . $class['slug'] . '/' . $s['slug']) ?>">
-          <span class="chip chip--<?= array('green','blue','orange','purple','pink','amber')[$i % 6] ?>"><?= icon('book') ?></span>
-          <span><strong><?= e($s['name']) ?></strong><small class="amcq-muted">Chapters: <?= (int) $s['chapter_count'] ?></small></span>
-        </a>
-      </li>
-      <?php endforeach; ?>
-    </ul>
-  </div>
-</section>
-
-<?php if ($competition): ?>
-<section class="section section--tight">
-  <div class="amcq-container">
-    <div class="promo">
-      <div class="promo__main">
-        <h2 class="promo__title"><?= e($competition['name']) ?> <span class="badge badge--pink">Tk <?= number_format($competition['entry_fee']) ?> Entry</span></h2>
-        <p>Test your knowledge. Compete with students across Bangladesh.</p>
-      </div>
-      <ul class="promo__facts">
-        <li><?= icon('trophy') ?><span><strong>Top <?= rtrim(rtrim($competition['qualify_percent'], '0'), '.') ?>%</strong>Qualify for Final Round</span></li>
-        <li><?= icon('star') ?><span><strong><?= (int) $winners ?> Winners</strong><?= str_replace('.00', '', taka($competition['prize_pool'])) ?> Prize Pool</span></li>
+<!-- ============ Competition + Top Schools ============ -->
+<section class="amcq-container comp-schools">
+  <?php if ($competition): ?>
+  <div class="comp-banner">
+    <div class="comp-banner__body">
+      <h2><?= e($competition['name']) ?> <span class="badge-pink">Tk <?= number_format($competition['entry_fee']) ?> Entry</span></h2>
+      <p>Test your knowledge. Compete with students across Bangladesh.</p>
+      <ul class="comp-banner__facts">
+        <li><?= icon('trophy', 'gold') ?><span><strong>Top <?= rtrim(rtrim($competition['qualify_percent'], '0'), '.') ?>%</strong>Qualify for Final Round</span></li>
+        <li><?= icon('star', 'gold') ?><span><strong><?= (int) $winners ?> Winners</strong>Tk <?= $pool ?> Prize Pool</span></li>
         <li><?= icon('calendar') ?><span><strong><?= $competition['round1_opens_at'] ? date('j M Y', strtotime($competition['round1_opens_at'])) : 'Coming Soon' ?></strong>Register and be ready</span></li>
       </ul>
       <a class="amcq-btn amcq-btn--light" href="<?= site_url('competition') ?>">Learn More <?= icon('arrow-right') ?></a>
     </div>
+    <img class="comp-banner__art" src="<?= asset('img/design/trophy.jpg') ?>" width="140" height="240" alt="">
   </div>
+  <?php endif; ?>
+
+  <div class="schools-card" data-tabs>
+    <div class="schools-card__head">
+      <h2><?= icon('school') ?> Top Schools This Week</h2>
+      <a class="link-arrow" href="<?= site_url('schools') ?>">View All Schools <?= icon('arrow-right') ?></a>
+    </div>
+    <div class="schools-card__body">
+      <div class="schools-card__table">
+        <div class="seg" role="tablist">
+          <a role="tab" class="seg__btn<?= $school_tab === 'average' ? ' is-active' : '' ?>" href="<?= site_url('?schools=average#schools') ?>" data-tab="average" aria-selected="<?= $school_tab === 'average' ? 'true' : 'false' ?>">Average Score</a>
+          <a role="tab" class="seg__btn<?= $school_tab === 'total' ? ' is-active' : '' ?>" href="<?= site_url('?schools=total#schools') ?>" data-tab="total" aria-selected="<?= $school_tab === 'total' ? 'true' : 'false' ?>">Total Score</a>
+        </div>
+        <?php foreach (array('average' => $top_avg, 'total' => $top_total) as $tab => $rows): ?>
+        <table class="mini-table" data-panel="<?= $tab ?>" id="<?= $tab === 'average' ? 'schools' : 'schools-total' ?>"<?= $school_tab === $tab ? '' : ' hidden' ?>>
+          <thead><tr><th>#</th><th>School Name</th><th class="num"><?= $tab === 'average' ? 'Average Score' : 'Total Score' ?></th></tr></thead>
+          <tbody>
+          <?php foreach ($rows as $i => $r): ?>
+            <tr><td><?= $i < 3 ? '<span class="medal medal--' . ($i + 1) . '" aria-label="Rank ' . ($i + 1) . '">' . icon('medal') . '</span>' : $i + 1 ?></td>
+              <td><?= e($r['name']) ?></td>
+              <td class="num"><?= $tab === 'average' ? number_format($r['average_score'], 3) : number_format($r['total_score']) ?></td></tr>
+          <?php endforeach; ?>
+          <?php if ( ! $rows): ?><tr><td colspan="3" class="amcq-muted">Rankings appear after the first week of practice.</td></tr><?php endif; ?>
+          </tbody>
+        </table>
+        <?php endforeach; ?>
+      </div>
+      <div class="your-school">
+        <span class="your-school__icon"><?= icon('school') ?></span>
+        <strong>Your School</strong>
+        <?php if ($my_school): ?>
+          <b class="your-school__rank">#<?= (int) $my_school['position'] ?></b>
+          <small>Among <?= number_format($my_school['of']) ?> schools</small>
+          <small>Average Score</small><b><?= number_format($my_school['average'], 3) ?></b>
+          <small>Total Score</small><b><?= number_format($my_school['total']) ?></b>
+        <?php elseif ($user): ?>
+          <small>Add your school in your profile to see its rank.</small>
+          <a class="link-arrow" href="<?= site_url('profile') ?>">Add School <?= icon('arrow-right') ?></a>
+        <?php else: ?>
+          <small>Sign in and add your school to see where it ranks.</small>
+          <a class="link-arrow" href="<?= site_url('signup') ?>">Sign Up <?= icon('arrow-right') ?></a>
+        <?php endif; ?>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Why AcademicMCQ ============ -->
+<section class="amcq-container home-section">
+  <h2>Why AcademicMCQ?</h2>
+  <p class="amcq-muted">More than just MCQs — a complete learning ecosystem</p>
+  <ul class="why-grid">
+    <li class="why why--green"><span class="round round--green"><?= icon('bolt') ?></span><div><strong>Practice</strong><p>Only Tk <?= number_format(QUIZ_FEE_TAKA) ?> per quiz. No subscription.</p></div></li>
+    <li class="why why--blue"><span class="round round--blue"><?= icon('bulb') ?></span><div><strong>Learn</strong><p>Detailed explanations with source references.</p></div></li>
+    <li class="why why--purple"><span class="round round--purple"><?= icon('bar-up') ?></span><div><strong>Track Progress</strong><p>Streaks, points, tiers and lifetime ranking.</p></div></li>
+    <li class="why why--pink"><span class="round round--pink"><?= icon('trophy') ?></span><div><strong>Compete</strong><p>Join national competition and win real prizes.</p></div></li>
+    <li class="why why--amber"><span class="round round--amber"><?= icon('users') ?></span><div><strong>Contribute</strong><p>Use “Correct Me” to improve questions and build your profile.</p></div></li>
+  </ul>
+</section>
+
+<!-- ============ What Students Say ============ -->
+<?php if ($testimonials): ?>
+<section class="amcq-container home-section">
+  <div class="section-head">
+    <h2>What Students Say</h2>
+    <a class="link-arrow" href="<?= site_url('testimonials') ?>">View More Testimonials <?= icon('arrow-right') ?></a>
+  </div>
+  <ul class="testimonials">
+    <?php foreach ($testimonials as $t): ?>
+    <li class="testimonial">
+      <?php if ($t['photo']): ?><img class="testimonial__photo" src="<?= asset($t['photo']) ?>" width="74" height="74" alt=""><?php endif; ?>
+      <div>
+        <p class="testimonial__quote">“<?= e($t['quote']) ?>”</p>
+        <span class="stars" aria-label="<?= (int) $t['rating'] ?> out of 5"><?= str_repeat(icon('star'), (int) $t['rating']) ?></span>
+        <p class="testimonial__who"><strong><?= e($t['student_name']) ?></strong>, <?= e($t['class_label']) ?><?php if ($t['school_name']): ?><br><span><?= e($t['school_name']) ?></span><?php endif; ?></p>
+      </div>
+    </li>
+    <?php endforeach; ?>
+  </ul>
 </section>
 <?php endif; ?>
-
-<section class="section">
-  <div class="amcq-container">
-    <h2>Why AcademicMCQ?</h2>
-    <p class="amcq-muted">More than just MCQs — a complete learning ecosystem.</p>
-    <ul class="grid grid--5 why">
-      <li class="why__card why__card--green"><span class="chip chip--green"><?= icon('flame') ?></span><div><strong>Practice</strong><p>Only Tk <?= number_format(QUIZ_FEE_TAKA) ?> per quiz. No subscription.</p></div></li>
-      <li class="why__card why__card--blue"><span class="chip chip--blue"><?= icon('bulb') ?></span><div><strong>Learn</strong><p>Detailed explanations with source references.</p></div></li>
-      <li class="why__card why__card--purple"><span class="chip chip--purple"><?= icon('chart') ?></span><div><strong>Track Progress</strong><p>Streaks, points, tiers and lifetime ranking.</p></div></li>
-      <li class="why__card why__card--pink"><span class="chip chip--pink"><?= icon('trophy') ?></span><div><strong>Compete</strong><p>Join the national competition and win real prizes.</p></div></li>
-      <li class="why__card why__card--amber"><span class="chip chip--amber"><?= icon('users') ?></span><div><strong>Contribute</strong><p>Use “Correct Me” to improve questions and build your profile.</p></div></li>
-    </ul>
-  </div>
-</section>
-
-<section class="section section--tint">
-  <div class="amcq-container two-col">
-    <div>
-      <h2>How It Works</h2>
-      <ol class="steps">
-        <li><b>1</b><div><strong>Pick a chapter</strong><span class="amcq-muted">Choose class, subject and chapter.</span></div></li>
-        <li><b>2</b><div><strong>Answer <?= QUIZ_QUESTION_COUNT ?> MCQs</strong><span class="amcq-muted"><?= QUIZ_MIX_EASY ?> easy, <?= QUIZ_MIX_MEDIUM ?> medium, <?= QUIZ_MIX_HARD ?> hard.</span></div></li>
-        <li><b>3</b><div><strong>Learn from mistakes</strong><span class="amcq-muted">Every answer comes with an explanation.</span></div></li>
-        <li><b>4</b><div><strong>Save progress and build rank</strong><span class="amcq-muted">Earn Academic Points and climb the tiers.</span></div></li>
-      </ol>
-    </div>
-    <div class="amcq-card">
-      <div class="section__head"><h3>National Academic Ranking</h3><a class="link-arrow" href="<?= site_url('leaderboard') ?>">View Full Leaderboard <?= icon('arrow-right') ?></a></div>
-      <?php if ($leaders): ?>
-      <table class="table">
-        <thead><tr><th>Rank</th><th>Student</th><th class="num">Points</th><th>Tier</th></tr></thead>
-        <tbody>
-        <?php foreach ($leaders as $i => $l): ?>
-          <tr><td>#<?= $i + 1 ?></td><td><?= e($l['display_name']) ?></td><td class="num amcq-points"><?= points($l['total_points']) ?></td><td><?= e($l['tier']) ?></td></tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
-      <?php else: ?>
-        <p class="amcq-muted">Be the first on the board.</p>
-      <?php endif; ?>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="amcq-container trust">
-    <span class="chip chip--blue chip--lg"><?= icon('shield') ?></span>
-    <div>
-      <h2>Affordable practice. Visible progress. No subscription pressure.</h2>
-      <p class="amcq-muted">See where your child is improving and which chapters need more practice.</p>
-    </div>
-    <a class="amcq-btn amcq-btn--primary" href="<?= site_url('practice') ?>">Start a Quiz</a>
-  </div>
-</section>

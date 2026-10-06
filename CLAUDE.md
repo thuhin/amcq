@@ -2,6 +2,16 @@
 
 CodeIgniter 3.1.13 + MySQL 8 + PHP 7.4. See README.md for setup.
 
+## Source of truth (decided by the owner)
+
+- **Look and features come from the design mockups** (12 PNGs in the design package).
+  Build what they show; match their layout, colours and components.
+- **Calculations come from the blueprint and stay as built**: 10 questions (5/3/2),
+  Tk 1, 25-quiz streak at 60%+ each, points only from streak/mastery/competition/
+  corrections. Where a mockup shows a different number, display the real value.
+- Styles: `brand.css` (tokens sampled from the mockups) → `app.css` (base
+  components) → `design.css` (the designed pages). New page styles go in design.css.
+
 ## Before changing anything
 
 - **Product rules are constants**, defined once in `application/config/constants.php`

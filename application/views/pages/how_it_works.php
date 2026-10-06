@@ -2,6 +2,13 @@
 <section class="section section--tight">
   <div class="amcq-container narrow">
     <h1>How It Works</h1>
+    <div class="video-box" id="video">
+      <?php if (INTRO_VIDEO_URL): ?>
+        <iframe src="<?= e(INTRO_VIDEO_URL) ?>" title="How AcademicMCQ works" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      <?php else: ?>
+        <div class="video-box__soon"><span class="play-dot play-dot--lg"><?= icon('play') ?></span><strong>Intro video coming soon</strong><span class="amcq-muted">Meanwhile, here is how it works in four steps.</span></div>
+      <?php endif; ?>
+    </div>
     <p class="amcq-muted">Choose a chapter → take <?= QUIZ_QUESTION_COUNT ?> MCQs → see your result → learn from mistakes → build your rank.</p>
     <ol class="steps steps--big">
       <li><b>1</b><div><strong>Pick a chapter</strong><span class="amcq-muted">Choose your class, subject and chapter, or one topic inside it.</span></div></li>

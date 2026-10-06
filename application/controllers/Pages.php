@@ -7,6 +7,7 @@ class Pages extends MY_Controller
 	const TITLES = array(
 		'how-it-works'      => array('How It Works', 'how'),
 		'pricing'           => array('Pricing', 'pricing'),
+		'faq'               => array('Frequently Asked Questions', 'faq'),
 		'about'             => array('About', ''),
 		'contact'           => array('Contact', ''),
 		'terms'             => array('Terms of Use', ''),
@@ -20,7 +21,7 @@ class Pages extends MY_Controller
 		if ( ! isset(self::TITLES[$slug])) {
 			show_404();
 		}
-		$view = in_array($slug, array('how-it-works', 'pricing'), TRUE) ? 'pages/' . str_replace('-', '_', $slug) : 'pages/policy';
+		$view = in_array($slug, array('how-it-works', 'pricing', 'faq'), TRUE) ? 'pages/' . str_replace('-', '_', $slug) : 'pages/policy';
 		$this->render($view, array('slug' => $slug, 'heading' => self::TITLES[$slug][0]),
 			array('title' => self::TITLES[$slug][0], 'nav' => self::TITLES[$slug][1]));
 	}

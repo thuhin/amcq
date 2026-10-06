@@ -14,7 +14,7 @@ class Auth extends MY_Controller
 		$this->load->library('form_validation');
 	}
 
-	public function login()
+	public function login($mode = 'login')
 	{
 		if ($this->user) {
 			redirect('dashboard');
@@ -39,8 +39,9 @@ class Auth extends MY_Controller
 				}
 			}
 		}
-		$this->render('auth/login', array('error' => $error, 'phone' => $this->input->post('phone')),
-			array('title' => 'Sign In'));
+		$signup = $mode === 'signup';
+		$this->render('auth/login', array('error' => $error, 'phone' => $this->input->post('phone'), 'signup' => $signup),
+			array('title' => $signup ? 'Sign Up' : 'Login'));
 	}
 
 	public function verify()

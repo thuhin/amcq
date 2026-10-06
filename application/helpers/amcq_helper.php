@@ -88,3 +88,32 @@ function chapter_label($chapter)
 	$c = (array) $chapter;
 	return ! empty($c['name_bn']) ? $c['name_bn'] . ' (' . $c['name'] . ')' : $c['name'];
 }
+
+/**
+ * Bangladeshi digit grouping, as the designs print money: 187000 -> 1,87,000.
+ * (Last three digits, then groups of two.)
+ */
+function bd_number($n)
+{
+	$n = (string) (int) round($n);
+	if (strlen($n) <= 3) {
+		return $n;
+	}
+	$last3 = substr($n, -3);
+	$rest = substr($n, 0, -3);
+	return preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', $rest) . ',' . $last3;
+}
+
+/** Subject icon and colour, matching the subject tiles in the designs. */
+function subject_style($slug)
+{
+	$map = array(
+		'mathematics' => array('calculator', 'green'),
+		'science'     => array('atom', 'blue'),
+		'bangla'      => array('book-open', 'orange'),
+		'english'     => array('type', 'purple'),
+		'islam-moral' => array('users', 'pink'),
+		'bgs'         => array('bar-up', 'amber'),
+	);
+	return isset($map[$slug]) ? $map[$slug] : array('book', 'blue');
+}

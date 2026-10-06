@@ -9,15 +9,15 @@
   // Selected-option highlight for browsers without CSS :has().
   form.addEventListener('change', function (e) {
     if (e.target.name !== 'option_id') return;
-    form.querySelectorAll('.amcq-option').forEach(function (el) {
-      el.classList.toggle('amcq-option--selected', el.contains(e.target));
+    form.querySelectorAll('.opt').forEach(function (el) {
+      el.classList.toggle('is-selected', el.contains(e.target));
     });
   });
 
   // Countdown. Display only: the deadline is checked on the server, so a
   // paused or edited clock in the browser cannot buy extra time.
   var timer = document.getElementById('timer');
-  if (timer) {
+  if (timer && timer.getAttribute('data-paused') !== '1') {
     var left = parseInt(timer.getAttribute('data-seconds-left'), 10);
     var out = timer.querySelector('b');
     var announced = false;
@@ -60,5 +60,46 @@
     if (custom.value) {
       document.querySelectorAll('.topup input[name=amount]').forEach(function (r) { r.checked = false; });
     }
+  });
+})();
+
+/* Home, step 3 -> step 4 (design 07): picking a subject updates the "Start
+   Practicing" card in place. Without JS each subject is a plain link that
+   reloads the page with ?subject=, so nothing depends on this. */
+(function () {
+  var list = document.querySelector('[data-subjects]');
+  if (!list) return;
+  list.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-subject]');
+    if (!a) return;
+    e.preventDefault();
+    list.querySelectorAll('[data-subject]').forEach(function (x) {
+      var on = x === a;
+      x.classList.toggle('is-selected', on);
+      if (on) x.setAttribute('aria-current', 'true'); else x.removeAttribute('aria-current');
+    });
+    var name = a.getAttribute('data-name'), url = a.getAttribute('data-url');
+    document.querySelectorAll('[data-go-title]').forEach(function (el) { el.textContent = el.textContent.split('•')[0] + '• ' + name; });
+    document.querySelectorAll('[data-go-name]').forEach(function (el) { el.textContent = name; });
+    document.querySelectorAll('[data-go-sub]').forEach(function (el) { el.textContent = a.getAttribute('data-ready') === '1' ? 'Chapter-wise MCQs' : 'Questions coming soon'; });
+    document.querySelectorAll('[data-go-link]').forEach(function (el) { el.href = url; });
+  });
+})();
+
+/* Average Score / Total Score tabs (Top Schools This Week). */
+(function () {
+  document.querySelectorAll('[data-tabs]').forEach(function (box) {
+    box.addEventListener('click', function (e) {
+      var tab = e.target.closest('[data-tab]');
+      if (!tab) return;
+      e.preventDefault();
+      var key = tab.getAttribute('data-tab');
+      box.querySelectorAll('[data-tab]').forEach(function (t) {
+        var on = t === tab;
+        t.classList.toggle('is-active', on);
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      box.querySelectorAll('[data-panel]').forEach(function (p) { p.hidden = p.getAttribute('data-panel') !== key; });
+    });
   });
 })();

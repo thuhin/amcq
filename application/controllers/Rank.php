@@ -20,6 +20,6 @@ class Rank extends MY_Controller
 			'tiers'       => $this->Points_model->tiers(),
 			'history'     => $this->Points_model->history($uid),
 			'nearby'      => $this->Points_model->nearby($uid),
-		), array('title' => 'My Rank', 'nav' => 'leaderboard'));
+		), array('title' => 'My Rank', 'nav' => 'rank', 'app' => TRUE));
 	}
 }
