@@ -11,9 +11,19 @@ function e($value)
 	return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * URL of a file under asset/, versioned by its modification time.
+ *
+ * nginx tells browsers to cache /asset/ for 7 days. Without a version, an
+ * updated stylesheet is ignored until that cache expires, and new page markup
+ * gets styled by old CSS. ?v=<mtime> changes whenever the file does, so
+ * browsers fetch it at once, and unchanged files stay cached.
+ */
 function asset($path)
 {
-	return APP_ASSET_URL . ltrim($path, '/');
+	$path = ltrim($path, '/');
+	$file = FCPATH . 'asset/' . $path;
+	return APP_ASSET_URL . $path . (is_file($file) ? '?v=' . filemtime($file) : '');
 }
 
 /**
