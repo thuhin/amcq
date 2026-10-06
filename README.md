@@ -11,89 +11,118 @@ Practice → learn from mistakes → build an academic rank → compete national
 |---|---|
 | Framework | CodeIgniter 3.1.13 (vendored in `system/`, as in the sibling projects) |
 | PHP | 7.4 |
-| Database | MySQL 8 (`utf8mb4` — Bangla content requires it) |
-| Front end | Hand-written CSS on design tokens, no build step |
+| Database | MySQL 8, `utf8mb4` (Bangla content needs it) |
+| Front end | Server-rendered views, hand-written CSS on design tokens, ~60 lines of optional JS |
 
-> **Note on the framework choice.** Master Blueprint v2.0 §7 specifies Django or
-> Laravel. CodeIgniter 3 was chosen instead to match the existing in-house
-> projects and deployment setup. CI3 reached end of life in 2022 and receives
-> security fixes only, so the question-bank and payment code should avoid relying
-> on framework-level protections and validate at the application layer.
+> **Framework choice.** Master Blueprint v2.0 §7 specifies Django or Laravel.
+> CodeIgniter 3 was chosen to match the existing in-house projects. CI3 reached
+> end of life in 2022 and gets security fixes only; this matters more than usual
+> because the app handles real money.
 
-## Layout
+## What works
 
+| Page | Design | URL |
+|---|---|---|
+| Home | 01 | `/` |
+| Practice selector | guideline §4.2 | `/practice` |
+| Chapter page | 11 | `/practice/class-5/mathematics` |
+| Quiz | 08 | `/quiz/{id}` |
+| Result | 10 | `/quiz/{id}/result` |
+| Answer review | 09 | `/quiz/{id}/review` |
+| Dashboard | 12 | `/dashboard` |
+| Sign in (phone → OTP → name/class) | §4.9 | `/login` |
+| My Progress, Rank, Wallet, Profile | §5.2–5.8 | `/progress`, `/rank`, `/wallet`, `/profile` |
+| Correct Me | §5.5 | `/correct-me` |
+| Leaderboard, Competition, Pricing, How It Works | §4.6–4.8 | |
+
+Rules implemented: 5 easy / 3 medium / 2 hard per quiz; Tk 1 wallet debit for
+signed-in students; 3 free quizzes for guests, kept on signup; streak of 25 quizzes
+at 60%+ each within 100 h = 1 point; chapter mastery; tiers; national rank;
+one-time Tk 99 competition registration.
+
+## Not built yet
+
+- **Payments.** No bKash/Nagad integration. In development, wallet top-ups are
+  simulated; elsewhere the page says "coming soon".
+- **SMS.** No gateway. In development the OTP is shown on screen; elsewhere sign-in
+  cannot complete until a gateway is added in `Auth::login()`.
+- **Admin.** No screens to review Correct Me submissions, verify questions or run
+  the competition rounds. Competition registration is closed (`status = 'draft'`).
+- **Referrals, certificates, notifications UI.** Tables exist; no pages yet.
+- **Legal pages.** Placeholders; the text must come from the business.
+- **Content.** 50 sample questions (Fractions, Decimals, Percentage). Other
+  chapters show "Coming Soon" until they hold a full 5/3/2 set.
+
+## Local setup
+
+1. **Config**: `cp application/config/env.php.example application/config/env.php`
+   and fill in the database credentials. `env.php` is gitignored.
+
+2. **Database** (as MySQL root, once):
+
+   ```sql
+   CREATE DATABASE amcq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   CREATE USER 'amcq'@'localhost' IDENTIFIED BY '...';
+   CREATE USER 'amcq'@'127.0.0.1' IDENTIFIED BY '...';
+   GRANT ALL PRIVILEGES ON amcq.* TO 'amcq'@'localhost', 'amcq'@'127.0.0.1';
+   ```
+
+   Then load everything:
+
+   ```bash
+   database/reset_local.sh            # schema + reference data + sample questions + demo users
+   database/reset_local.sh --no-demo  # schema + reference data only
+   ```
+
+3. **Site at http://amcqtest.com**
+
+   ```bash
+   sudo cp deploy/nginx-amcqtest.conf /etc/nginx/sites-available/amcq
+   sudo ln -s /etc/nginx/sites-available/amcq /etc/nginx/sites-enabled/amcq
+   echo "127.0.0.1       amcqtest.com" | sudo tee -a /etc/hosts
+   sudo nginx -t && sudo systemctl reload nginx
+   ```
+
+   The web root is the repo root, so the nginx config blocks `database/`,
+   `application/`, `system/`, `tests/`, `.git` and `*.sql|*.sh|*.md|*.py`.
+   Keep those rules in any production config.
+
+4. **Demo login**: phone `01700000001` (Rahim, Silver Scholar, ৳50 wallet). The OTP
+   appears on screen in development.
+
+## Database files
+
+| File | Contents | Production? |
+|---|---|---|
+| `database/schema.sql` | 37 tables. **Drops and recreates them.** | First install only |
+| `database/seed.sql` | Tiers, difficulty weights, prizes, career ladder, curriculum | Yes |
+| `database/seed_sample_questions.sql` | 50 AI-drafted questions, `origin='ai'` | **No**, not until a teacher has checked them |
+| `database/seed_demo.sql` | Fake students, wallets, points | **Never** |
+
+## Tests
+
+```bash
+database/reset_local.sh
+php -S 127.0.0.1:8899 tests/dev_router.php &
+python3 tests/e2e.py        # set env.php URLs to http://127.0.0.1:8899/ first
 ```
-application/
-  config/      env.php (gitignored) holds everything per-server
-  controllers/ Home.php
-  views/       layout/ + home/
-asset/css/     brand.css (design tokens), home.css
-database/      schema.sql
-system/        CodeIgniter 3.1.13, committed
-```
 
-## Setup
-
-1. **Config**
-
-   ```bash
-   cp application/config/env.php.example application/config/env.php
-   ```
-
-   Fill in the URLs and database credentials for *this* machine. `env.php` is
-   gitignored and must never be copied between servers — it is the only file
-   that differs between localhost and production. Tracked config files read its
-   constants, so uploading `config.php` cannot point production at a dev host.
-
-2. **Database**
-
-   ```bash
-   mysql -u root -p -e "CREATE DATABASE amcq CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-   mysql -u root -p amcq < database/schema.sql
-   ```
-
-3. **Environment**
-
-   `index.php` reads `$_SERVER['CI_ENV']`, so the environment comes from the web
-   server rather than a tracked file. In nginx:
-
-   ```nginx
-   fastcgi_param CI_ENV production;
-   ```
-
-   Unset falls back to `development`.
-
-4. **Run locally**
-
-   ```bash
-   php -S 127.0.0.1:8899 -t .
-   ```
+62 checks drive the site like a browser and verify the database after each step:
+grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
+streak and mastery rules, double-submit safety, the timer, and that every wallet
+and points total equals the sum of its ledger.
 
 ## Conventions
 
-- **Three value systems never mix.** Wallet balance is real Taka (`DECIMAL`),
-  Academic Points are reputation (never spendable, never decrease), quiz score
-  is performance. Separate tables, separate CSS classes, separate labels.
-- **Money is `DECIMAL`, never `FLOAT`.** A wallet debited Tk 1 at a time would
-  drift from its true balance under binary floating point.
-- **Product rules live in `constants.php`**, not scattered through controllers —
-  quiz fee, streak threshold, streak window, question count.
-- **Colors come from tokens in `brand.css`.** Green and red are reserved for
-  quiz correctness; reusing them elsewhere weakens the one signal that matters.
-- **Correctness is never signalled by color alone** — always an icon and a label
-  as well.
-
-## Status
-
-Scaffold only. The home page renders real markup against hard-coded sample data;
-nothing is wired to the database yet.
-
-Build order (brand guideline §18): home → practice selector → chapter → quiz →
-result → learn/explanation → sign up → dashboard → progress → rank → wallet →
-competition → leaderboard → Correct Me → profile → legal pages.
+- **Three value systems never mix.** Wallet = Taka (`DECIMAL`), Academic Points =
+  reputation (never spent, never decrease), quiz score = performance. Separate
+  tables, models, CSS classes and labels.
+- **Product rules live in `constants.php`.** Fee, mix, streak, mastery, OTP.
+- **One clock.** PHP and MySQL are both pinned to Asia/Dhaka (+06:00).
+- **Colors come from tokens in `brand.css`.** Green and red are for correctness only.
+- **Correctness is never color alone.** Always an icon and a label too.
 
 ## Design source
 
-`AcademicMCQ_Design_Package/` — 12 mockups, the UI brand guideline, and Master
-Blueprint v2.0. Where the mockups and the guideline disagree on copy, the
-mockups are newer and win.
+`AcademicMCQ_Design_Package/`: 12 mockups, the UI brand guideline, Master
+Blueprint v2.0.

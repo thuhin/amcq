@@ -21,6 +21,17 @@
   --amcq-warning: #C88712;
   --amcq-error:   #C84545;
 
+  /* ---- Supporting accents ----------------------------------------------
+     Only for the soft icon chips the mockups use to tell subjects and stat
+     cards apart. Never for text, buttons, or correctness. */
+  --amcq-purple: #7C4DDB;  --amcq-purple-bg: #F1EBFD;
+  --amcq-pink:   #D9447A;  --amcq-pink-bg:   #FCEAF1;
+  --amcq-orange: #E8742B;  --amcq-orange-bg: #FDF0E6;
+  --amcq-amber:  #C88712;  --amcq-amber-bg:  #FCF4E1;
+  --amcq-green-bg: #E8F6EF;
+  --amcq-red-bg:   #FBEDED;
+  --amcq-blue-bg:  #EAF3FB;
+
   /* ---- Neutrals -------------------------------------------------------- */
   --amcq-text:      #16202A;
   --amcq-text-soft: #607080;
@@ -165,19 +176,21 @@ a:focus-visible {
 }
 .amcq-option:hover { border-color: var(--amcq-primary-600); }
 .amcq-option--selected { border-color: var(--amcq-primary-600); background: var(--amcq-primary-100); }
-.amcq-option--correct   { border-color: var(--amcq-success); background: #EAF7F0; }
-.amcq-option--incorrect { border-color: var(--amcq-error);   background: #FBEDED; }
+.amcq-option--correct   { border-color: var(--amcq-success); background: var(--amcq-green-bg); }
+.amcq-option--incorrect { border-color: var(--amcq-error);   background: var(--amcq-red-bg); }
 
 /* --------------------------------------------------------------------------
    Progress — streak, tier, chapter. Not decorative (§10).
    -------------------------------------------------------------------------- */
 .amcq-progress {
+  display: block;   /* also used on <span>s inside text rows */
   height: 8px;
   background: var(--amcq-primary-100);
   border-radius: 999px;
   overflow: hidden;
 }
 .amcq-progress__bar {
+  display: block;
   height: 100%;
   background: var(--amcq-accent);
   border-radius: 999px;

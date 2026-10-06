@@ -3,52 +3,44 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 /*
 | -------------------------------------------------------------------------
-| URI ROUTING
+| URI routing. Clean URLs map to controller/method; see the CodeIgniter 3
+| user guide, "URI Routing". Specific routes must come before (:any) ones.
 | -------------------------------------------------------------------------
-| This file lets you re-map URI requests to specific controller functions.
-|
-| Typically there is a one-to-one relationship between a URL string
-| and its corresponding controller class/method. The segments in a
-| URL normally follow this pattern:
-|
-|	example.com/class/method/id/
-|
-| In some instances, however, you may want to remap this relationship
-| so that a different class/function is called than the one
-| corresponding to the URL.
-|
-| Please see the user guide for complete details:
-|
-|	https://codeigniter.com/userguide3/general/routing.html
-|
-| -------------------------------------------------------------------------
-| RESERVED ROUTES
-| -------------------------------------------------------------------------
-|
-| There are three reserved routes:
-|
-|	$route['default_controller'] = 'home';
-|
-| This route indicates which controller class should be loaded if the
-| URI contains no data. In the above example, the "welcome" class
-| would be loaded.
-|
-|	$route['404_override'] = 'errors/page_missing';
-|
-| This route will tell the Router which controller/method to use if those
-| provided in the URL cannot be matched to a valid route.
-|
-|	$route['translate_uri_dashes'] = FALSE;
-|
-| This is not exactly a route, but allows you to automatically route
-| controller and method names that contain dashes. '-' isn't a valid
-| class or method name character, so it requires translation.
-| When you set this option to TRUE, it will replace ALL dashes in the
-| controller and method URI segments.
-|
-| Examples:	my-controller/index	-> my_controller/index
-|		my-controller/my-method	-> my_controller/my_method
 */
 $route['default_controller'] = 'home';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
+
+// Practice: class -> subject (chapter page, design 11)
+$route['practice']                       = 'practice/index';
+$route['practice/(:any)/(:any)']         = 'practice/subject/$1/$2';
+
+// Quiz flow: start -> take -> result (design 10) -> review (design 09)
+$route['quiz/start']                     = 'quiz/start';
+$route['quiz/(:num)']                    = 'quiz/take/$1';
+$route['quiz/(:num)/answer']             = 'quiz/answer/$1';
+$route['quiz/(:num)/submit']             = 'quiz/submit/$1';
+$route['quiz/(:num)/result']             = 'quiz/result/$1';
+$route['quiz/(:num)/review']             = 'quiz/review/$1';
+
+// Phone OTP sign-in
+$route['login']                          = 'auth/login';
+$route['login/verify']                   = 'auth/verify';
+$route['register']                       = 'auth/register';
+$route['logout']                         = 'auth/logout';
+
+// Signed-in student
+$route['dashboard']                      = 'dashboard/index';
+$route['progress']                       = 'progress/index';
+$route['rank']                           = 'rank/index';
+$route['wallet']                         = 'wallet/index';
+$route['wallet/topup']                   = 'wallet/topup';
+$route['profile']                        = 'profile/index';
+$route['correct-me']                     = 'correct_me/index';
+$route['correct-me/(:num)']              = 'correct_me/question/$1';
+
+// Public
+$route['leaderboard']                    = 'leaderboard/index';
+$route['competition']                    = 'competition/index';
+$route['competition/register']           = 'competition/register';
+$route['(how-it-works|pricing|about|contact|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';

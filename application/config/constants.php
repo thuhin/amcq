@@ -103,6 +103,17 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 require_once APPPATH . 'config/env.php';
 
 /*
+| One clock for PHP and MySQL. PHP alone defaults to UTC while MySQL follows
+| the server's zone; mixing them made every database timestamp six hours off
+| from PHP's time(), which silently broke the quiz timer and the streak window.
+| MY_Controller sets the same offset on the database session. Bangladesh has
+| no daylight saving, so the fixed offset is exact all year.
+*/
+define('APP_TIMEZONE',    'Asia/Dhaka');
+define('APP_TZ_OFFSET',   '+06:00');
+date_default_timezone_set(APP_TIMEZONE);
+
+/*
 | Money and billable-API rails. Both default to TRUE so production needs no
 | extra config; a dev or staging box sets them FALSE in env.php. Guarding the
 | default this way means a new environment is safe only after it says so.
@@ -120,3 +131,31 @@ define('COMPETITION_FEE_TAKA',     99.00); // one-time registration
 define('STREAK_PASS_PERCENTAGE',   60);    // each quiz must score 60%+
 define('STREAK_REQUIRED_QUIZZES',  25);    // 25 qualifying quizzes...
 define('STREAK_WINDOW_HOURS',      100);   // ...within 100 hours = 1 point
+
+// Daily practice mix (blueprint §9): QUIZ_QUESTION_COUNT = easy + medium + hard.
+define('QUIZ_MIX_EASY',   5);
+define('QUIZ_MIX_MEDIUM', 3);
+define('QUIZ_MIX_HARD',   2);
+// The quiz design shows a running timer. One minute per question, matching
+// the design's 20 questions / 20 minutes ratio.
+define('QUIZ_SECONDS_PER_QUESTION', 60);
+
+// Chapter mastery (§11 "Chapter Mastery (consecutive): up to 5, per chapter";
+// guideline §5.3 shows it as one "+5 Chapter mastery" entry). Read as: this
+// many consecutive 85%+ quizzes in a chapter masters it, worth 5 points, once.
+define('MASTERY_PERCENTAGE', 85);
+define('MASTERY_RUN',        3);
+define('MASTERY_POINTS',     5);
+
+// Guest-first (guideline §6.2): a visitor can finish real quizzes before being
+// asked to register. Guests have no wallet, so their quizzes are free; the cap
+// stops that from replacing the Tk 1 model.
+define('GUEST_FREE_QUIZZES', 3);
+
+// Phone OTP.
+define('OTP_LENGTH',        6);
+define('OTP_TTL_MINUTES',   5);
+define('OTP_MAX_ATTEMPTS',  5);
+define('OTP_RESEND_SECONDS', 60);
+
+define('LEADERBOARD_PUBLIC_SIZE', 10);   // "Top 10 visible to everyone" (§11)

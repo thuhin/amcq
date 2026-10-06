@@ -40,10 +40,31 @@ WhatsApp Challenge, Friday Fun, and School Competition are all marked POST-MVP i
 blueprint v2.0, and the WhatsApp Challenge has an unresolved internal
 contradiction plus an open legal question about peer point wagering.
 
+## Where things live
+
+- `application/models/` hold the rules: `Quiz_model` (start, grade, streak,
+  mastery), `Wallet_model` (money, row-locked), `Points_model` (idempotent awards,
+  tiers, rank), `Curriculum_model`, `User_model` (OTP), `Competition_model`.
+- Controllers are thin; views are plain PHP under `application/views/`.
+- `MY_Controller` resolves the user or guest and renders the layout.
+
+## More rules that are easy to get wrong
+
+- **Timezone.** PHP and the MySQL session are both pinned to +06:00 (constants.php
+  and MY_Controller). Comparing a DB timestamp to PHP `time()` without this was off
+  by six hours and silently broke the quiz timer and streak window.
+- **Points awards are idempotent by key**, not by checking first: `Points_model::award()`
+  relies on `UNIQUE (user_id, source, ref_type, ref_id)`. Always pass a real ref.
+- **A quiz needs a full 5/3/2 set** of published questions or it shows "Coming Soon".
+- **Escape everything** with `e()`; question text goes through `math_text()`, which
+  escapes first and only then adds fraction markup.
+- **Never show the OTP outside development.** `Auth::login()` only flashes it when
+  `ENVIRONMENT === 'development'`.
+
 ## Verifying a change
 
 ```bash
-php -l <file>                      # syntax
-php -S 127.0.0.1:8899 -t .         # serve
-curl -s http://127.0.0.1:8899/index.php | head
+database/reset_local.sh                      # fresh data; e2e assumes it
+php -S 127.0.0.1:8899 tests/dev_router.php &
+python3 tests/e2e.py                         # env.php URLs must point at :8899
 ```

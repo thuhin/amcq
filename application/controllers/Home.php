@@ -2,40 +2,26 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 /**
- * Public home page.
- *
- * Guest-first (brand guideline §6.2): everything here is reachable without an
- * account, and the quick-start selector hands a visitor straight to a quiz.
+ * Public home page (design 01). Guest-first: everything here works without an
+ * account, and Start Practicing goes straight to a quiz (guideline §6.2).
  */
-class Home extends CI_Controller
+class Home extends MY_Controller
 {
 	public function index()
 	{
-		$data = array(
-			'page_title' => 'AcademicMCQ — Practice. Learn. Compete.',
-			// Hard-coded for the first commit. These become queries against
-			// classes/subjects once the curriculum tables hold real rows;
-			// the view already reads them as if they came from the database.
-			'classes' => array(
-				array('name' => 'Class 5',  'slug' => 'class-5',  'active' => TRUE),
-				array('name' => 'Class 6',  'slug' => 'class-6',  'active' => FALSE),
-				array('name' => 'Class 7',  'slug' => 'class-7',  'active' => FALSE),
-				array('name' => 'Class 8',  'slug' => 'class-8',  'active' => FALSE),
-				array('name' => 'Class 9',  'slug' => 'class-9',  'active' => FALSE),
-				array('name' => 'Class 10', 'slug' => 'class-10', 'active' => FALSE),
-			),
-			'subjects' => array(
-				array('name' => 'Mathematics',  'chapters' => 12),
-				array('name' => 'Science',      'chapters' => 14),
-				array('name' => 'Bangla',       'chapters' => 12),
-				array('name' => 'English',      'chapters' => 12),
-				array('name' => 'Islam & Moral','chapters' => 10),
-				array('name' => 'Bangladesh & Global Studies', 'chapters' => 12),
-			),
-		);
+		$this->load->model(array('Curriculum_model', 'Points_model', 'Competition_model'));
+		$class = $this->Curriculum_model->class_by_slug('class-5');
+		$competition = $this->Competition_model->current();
 
-		$this->load->view('layout/header', $data);
-		$this->load->view('home/index', $data);
-		$this->load->view('layout/footer');
+		$this->render('home/index', array(
+			'mediums'     => $this->Curriculum_model->mediums(),
+			'classes'     => $this->Curriculum_model->classes(1),
+			'class'       => $class,
+			'subjects'    => $this->Curriculum_model->subjects($class['id']),
+			'stats'       => $this->Curriculum_model->stats(),
+			'leaders'     => $this->Points_model->leaderboard(5),
+			'competition' => $competition,
+			'winners'     => $competition ? $this->Competition_model->winner_count($competition['id']) : 0,
+		));
 	}
 }
