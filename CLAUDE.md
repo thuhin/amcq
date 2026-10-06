@@ -24,6 +24,17 @@ CodeIgniter 3.1.13 + MySQL 8 + PHP 7.4. See README.md for setup.
 - **CSS uses tokens only.** Add a variable to `asset/css/brand.css` rather than a
   raw hex value in a component stylesheet.
 
+## Changing the database
+
+Every schema change goes in **both** places:
+1. `database/schema.sql` (+ `seed.sql` for reference data): fresh installs.
+2. A new `application/migrations/<YYYYMMDDHHMMSS>_<name>.sql`: existing databases.
+   Must be idempotent: `CREATE TABLE IF NOT EXISTS`, column adds guarded through
+   information_schema (MySQL 8 has no `ADD COLUMN IF NOT EXISTS`), `INSERT IGNORE`.
+Test data for it goes in `database/test_data/` with a later timestamp, never in migrations.
+Check: build the previous commit's schema, run `./migrate.sh --test-data` twice, and
+diff `mysqldump --no-data` against a fresh `database/reset_local.sh`.
+
 ## Rules that are easy to get wrong
 
 - **Wallet ≠ Academic Points.** Wallet is real money in Taka and is spendable.

@@ -108,12 +108,13 @@ function bd_number($n)
 function subject_style($slug)
 {
 	$map = array(
-		'mathematics' => array('calculator', 'green'),
-		'science'     => array('atom', 'blue'),
-		'bangla'      => array('book-open', 'orange'),
-		'english'     => array('type', 'purple'),
-		'islam-moral' => array('users', 'pink'),
-		'bgs'         => array('bar-up', 'amber'),
+		'mathematics' => array('calculator', 'green',  'Math'),
+		'science'     => array('atom',       'blue',   'Science'),
+		'bangla'      => array('book-open',  'orange', 'Bangla'),
+		'english'     => array('type',       'purple', 'English'),
+		'islam-moral' => array('users',      'pink',   'Islam & Moral'),
+		'bgs'         => array('bar-up',     'amber',  'BGS'),
 	);
-	return isset($map[$slug]) ? $map[$slug] : array('book', 'blue');
+	// [icon, colour, short label for the phone subject tiles (design 04)]
+	return isset($map[$slug]) ? $map[$slug] : array('book', 'blue', NULL);
 }

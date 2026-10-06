@@ -127,6 +127,22 @@ size doesn't win), What Students Say, Watch Video.
 4. **Demo login**: phone `01700000001` (Rahim, Silver Scholar, ৳50 wallet). The OTP
    appears on screen in development.
 
+## Migrations (existing databases)
+
+Fresh install: `database/reset_local.sh` builds everything from `database/`.
+Existing database: apply only what changed, without wiping data:
+
+```bash
+./migrate.sh               # application/migrations/*.sql: schema + reference data
+./migrate.sh --test-data   # also database/test_data/*.sql (refused when CI_ENV=production)
+./migrate.sh --list        # show what would run
+```
+
+Every file is idempotent (safe to re-run) and runs in timestamp order. The
+password is asked for at run time, never read from a file. Verified: a database
+built from the previous schema plus `./migrate.sh --test-data`, run twice, is
+identical to a fresh build, in structure and in data.
+
 ## Database files
 
 | File | Contents | Production? |
@@ -135,6 +151,8 @@ size doesn't win), What Students Say, Watch Video.
 | `database/seed.sql` | Tiers, difficulty weights, prizes, career ladder, curriculum | Yes |
 | `database/seed_sample_questions.sql` | 50 AI-drafted questions, `origin='ai'` | **No**, not until a teacher has checked them |
 | `database/seed_demo.sql` | Fake students, wallets, points | **Never** |
+| `database/test_data/*.sql` | Test data per migration (e.g. sample contact messages) | **Never** |
+| `application/migrations/*.sql` | Incremental, idempotent schema changes | Yes, via `./migrate.sh` |
 
 ## Cron
 

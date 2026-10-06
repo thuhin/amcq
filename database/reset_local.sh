@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Rebuild the LOCAL database from scratch: schema, reference data, sample
-# questions and demo users. Destroys every row in the target database.
+# questions, demo users and database/test_data/. Destroys every row in the target database.
 #
 #   database/reset_local.sh            # full dev reset
 #   database/reset_local.sh --no-demo  # schema + reference data only
@@ -29,5 +29,6 @@ run database/seed.sql
 if [ "${1:-}" != "--no-demo" ]; then
   run database/seed_sample_questions.sql
   run database/seed_demo.sql
+  for f in database/test_data/*.sql; do run "$f"; done   # idempotent test data
 fi
 echo "done"

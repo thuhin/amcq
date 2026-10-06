@@ -36,14 +36,14 @@ $medium_icons = array('bangla-medium' => 'book-open', 'english-version' => 'ab',
     <div class="selector__head">
       <span class="chip chip--blue chip--lg"><?= icon('book-open') ?></span>
       <div>
-        <h2>Start Practicing — Select Your Curriculum, Class and Subject</h2>
-        <p class="amcq-muted">Follow the NCTB syllabus and practice chapter-wise MCQs with instant explanations.</p>
+        <h2><span class="only-wide">Start Practicing — Select Your Curriculum, Class and Subject</span><span class="only-narrow">Start Practicing</span></h2>
+        <p class="amcq-muted"><span class="only-wide">Follow the NCTB syllabus and practice chapter-wise MCQs with instant explanations.</span><span class="only-narrow">Choose your curriculum, class and subject to begin</span></p>
       </div>
     </div>
 
     <div class="selector__steps">
       <div class="step step--curriculum">
-        <h3 class="step__title step__title--ribbon"><b>1</b> Choose Your Curriculum</h3>
+        <h3 class="step__title step__title--ribbon"><b>1</b> <span>Choose Your Curriculum<span class="only-narrow"> / Medium</span></span></h3>
         <ul class="medium-cards">
           <?php foreach ($mediums as $m): ?>
           <li class="medium-card<?= $m['is_active'] ? ' is-selected' : ' is-locked' ?>">
@@ -51,7 +51,7 @@ $medium_icons = array('bangla-medium' => 'book-open', 'english-version' => 'ab',
             <?php else: ?><span class="medium-card__lock" aria-hidden="true"><?= icon('lock') ?></span><?php endif; ?>
             <span class="medium-card__icon"><?= icon(isset($medium_icons[$m['slug']]) ? $medium_icons[$m['slug']] : 'book') ?></span>
             <strong><?= e($m['name']) ?></strong>
-            <small><?= e($m['description']) ?></small>
+            <small><span class="only-wide"><?= e($m['description']) ?></span><span class="only-narrow"><?= e(strtok($m['description'], ',')) ?></span></small>
             <?php if ( ! $m['is_active']): ?><span class="soon-tag">Coming Soon</span><?php endif; ?>
           </li>
           <?php endforeach; ?>
@@ -59,15 +59,16 @@ $medium_icons = array('bangla-medium' => 'book-open', 'english-version' => 'ab',
       </div>
 
       <div class="step">
-        <h3 class="step__title"><b>2</b> Select Your Class</h3>
-        <ul class="pick-list">
+        <div class="step__head"><h3 class="step__title"><b>2</b> <span>Select Your Class</span></h3><a class="step__all link-arrow" href="<?= site_url('practice') ?>">View All <?= icon('arrow-right') ?></a></div>
+        <ul class="pick-list pick-list--classes">
           <?php foreach ($classes as $c): ?>
             <li>
               <?php if ($c['is_active']): ?>
                 <a class="pick-row is-selected" href="<?= site_url('?subject=' . $selected['slug'] . '#start') ?>" aria-current="true">
-                  <span class="pick-row__icon pick-row__icon--blue"><?= icon('file') ?></span><span><?= e($c['name']) ?></span><?= icon('arrow-right', 'pick-row__go') ?></a>
+                  <span class="pick-row__icon pick-row__icon--blue"><?= icon('list') ?></span>
+                  <span class="pick-row__text"><b><?= e($c['name']) ?></b><small class="pick-row__sub">Start Now</small></span><?= icon('arrow-right', 'pick-row__go') ?></a>
               <?php else: ?>
-                <span class="pick-row is-locked" aria-disabled="true"><span><?= e($c['name']) ?></span><?= icon('lock', 'pick-row__go') ?><span class="sr-only">Coming soon</span></span>
+                <span class="pick-row is-locked" aria-disabled="true"><span class="pick-row__text"><b><?= e($c['name']) ?></b><small class="pick-row__sub">Soon</small></span><?= icon('lock', 'pick-row__go') ?><span class="sr-only">Coming soon</span></span>
               <?php endif; ?>
             </li>
           <?php endforeach; ?>
@@ -75,21 +76,22 @@ $medium_icons = array('bangla-medium' => 'book-open', 'english-version' => 'ab',
       </div>
 
       <div class="step">
-        <h3 class="step__title"><b>3</b> Choose a Subject</h3>
-        <ul class="pick-list" data-subjects>
-          <?php foreach ($subjects as $s): list($ic, $col) = subject_style($s['slug']); $on = $s['id'] === $selected['id']; ?>
+        <div class="step__head"><h3 class="step__title"><b>3</b> <span>Choose a Subject<span class="only-narrow"> (<?= e($class['name']) ?>)</span></span></h3><a class="step__all link-arrow" href="<?= site_url('practice') ?>">View All <?= icon('arrow-right') ?></a></div>
+        <ul class="pick-list pick-list--subjects" data-subjects>
+          <?php foreach ($subjects as $s): list($ic, $col, $short) = subject_style($s['slug']); $on = $s['id'] === $selected['id']; ?>
             <li>
               <a class="pick-row<?= $on ? ' is-selected' : '' ?>" href="<?= site_url('?subject=' . $s['slug'] . '#start') ?>"
                  data-subject="<?= e($s['slug']) ?>" data-name="<?= e($s['name']) ?>" data-icon="<?= $ic ?>" data-color="<?= $col ?>"
                  data-ready="<?= $s['playable_chapters'] ? 1 : 0 ?>" data-url="<?= site_url('practice/' . $class['slug'] . '/' . $s['slug']) ?>"<?= $on ? ' aria-current="true"' : '' ?>>
-                <span class="pick-row__icon pick-row__icon--<?= $col ?>"><?= icon($ic) ?></span><span><?= e($s['name']) ?></span><?= icon('arrow-right', 'pick-row__go') ?></a>
+                <span class="pick-row__icon pick-row__icon--<?= $col ?>"><?= icon($ic) ?></span>
+                <span class="pick-row__text"><b class="only-wide"><?= e($s['name']) ?></b><b class="only-narrow"><?= e($short ?: $s['name']) ?></b><small class="pick-row__sub"><?= (int) $s['chapter_count'] ?> chapters</small></span><?= icon('arrow-right', 'pick-row__go') ?></a>
             </li>
           <?php endforeach; ?>
         </ul>
       </div>
 
       <div class="step step--go" data-go>
-        <h3 class="step__title"><b>4</b> Start Practicing</h3>
+        <h3 class="step__title"><b>4</b> <span>Start Practicing</span></h3>
         <div class="go-card">
           <span class="go-card__art" aria-hidden="true"><?= icon('checklist') ?><?= icon('clock', 'go-card__clock') ?></span>
           <strong data-go-title><?= e($class['name']) ?> • <?= e($selected['name']) ?></strong>
