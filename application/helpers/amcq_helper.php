@@ -35,6 +35,25 @@ function taka($amount)
 	return '৳' . number_format((float) $amount, 2);
 }
 
+/**
+ * The intro video for How It Works. A YouTube embed set in env.php
+ * (INTRO_VIDEO_URL) wins; otherwise the rendered file asset/video/intro.mp4
+ * (made by docs/intro-video/render.py); otherwise NULL, shown as "coming soon".
+ *
+ * @return array|NULL ['type' => 'embed'|'file', 'src' => url, 'poster' => url|NULL]
+ */
+function intro_video()
+{
+	if (INTRO_VIDEO_URL) {
+		return array('type' => 'embed', 'src' => INTRO_VIDEO_URL, 'poster' => NULL);
+	}
+	if (is_file(FCPATH . 'asset/video/intro.mp4')) {
+		return array('type' => 'file', 'src' => asset('video/intro.mp4'),
+			'poster' => is_file(FCPATH . 'asset/video/intro-poster.png') ? asset('video/intro-poster.png') : NULL);
+	}
+	return NULL;
+}
+
 /** Western digits to Bangla digits (০-৯), for the Bangla version of a page. */
 function bn_digits($text)
 {

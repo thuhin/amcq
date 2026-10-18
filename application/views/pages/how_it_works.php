@@ -2,9 +2,15 @@
 <section class="section section--tight">
   <div class="amcq-container narrow">
     <h1>How It Works</h1>
+    <?php $video = intro_video(); ?>
     <div class="video-box" id="video">
-      <?php if (INTRO_VIDEO_URL): ?>
-        <iframe src="<?= e(INTRO_VIDEO_URL) ?>" title="How AcademicMCQ works" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      <?php if ($video && $video['type'] === 'embed'): ?>
+        <iframe src="<?= e($video['src']) ?>" title="How AcademicMCQ works" loading="lazy" allow="encrypted-media; picture-in-picture" allowfullscreen></iframe>
+      <?php elseif ($video): ?>
+        <video controls playsinline preload="metadata"<?= $video['poster'] ? ' poster="' . e($video['poster']) . '"' : '' ?> aria-label="How AcademicMCQ works: a short walkthrough in English and Bangla, no sound">
+          <source src="<?= e($video['src']) ?>" type="video/mp4">
+          <a href="<?= e($video['src']) ?>">Download the intro video (MP4)</a>
+        </video>
       <?php else: ?>
         <div class="video-box__soon"><span class="play-dot play-dot--lg"><?= icon('play') ?></span><strong>Intro video coming soon</strong><span class="amcq-muted">Meanwhile, here is how it works in four steps.</span></div>
       <?php endif; ?>

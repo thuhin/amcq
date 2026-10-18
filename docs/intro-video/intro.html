@@ -1,0 +1,371 @@
+<!doctype html>
+<!--
+  AcademicMCQ intro video: the source. A canvas animation, 1280x720, about 38 s,
+  English and Bangla on screen, no sound. render.py encodes it frame by
+  frame (WebCodecs + mp4-muxer) to asset/video/intro.mp4, and takes the poster,
+  with headless Chrome.
+
+  Open it in a browser to preview. The numbers come from the URL hash (cfg=...),
+  which render.py fills from application/config/constants.php, so the video
+  states the real rules. The defaults below are only for previewing.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AcademicMCQ intro video</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap">
+<style>
+  html, body { margin: 0; background: #0E1B3D; }
+  canvas { display: block; width: 1280px; height: 720px; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1280" height="720"></canvas>
+<script>
+(function () {
+  'use strict';
+
+  // ---- Settings ------------------------------------------------------------
+  var params = {};
+  location.hash.replace(/^#/, '').split('&').forEach(function (kv) {
+    var i = kv.indexOf('='); if (i > 0) params[kv.slice(0, i)] = decodeURIComponent(kv.slice(i + 1));
+  });
+  var C = Object.assign({
+    questions: 10, easy: 5, medium: 3, hard: 2, minutes: 10, fee: 1,
+    streak: 25, pass: 60, window: 100, streakPoints: 1, free: 3
+  }, params.cfg ? JSON.parse(params.cfg) : {});
+  var MODE = params.mode || 'preview';      // preview | encode | poster
+
+  // Brand colours, mirrored from asset/css/brand.css.
+  var K = {
+    navy: '#071A4A', primary: '#0665FC', primary700: '#0451CC', primary100: '#EAF3FE', primary200: '#DCEDFE',
+    success: '#0DBF82', successText: '#088A5E', greenBg: '#E7F8F1', amber: '#F5A30A', amberBg: '#FFF6E0',
+    text: '#0E1B3D', soft: '#5B6B82', border: '#E3EAF3', surface: '#F5FAFE', white: '#FFFFFF'
+  };
+  var EN_H = '"Poppins", "Noto Sans Bengali", sans-serif';
+  var EN = '"Inter", "Noto Sans Bengali", sans-serif';
+  var BN = '"Noto Sans Bengali", "Inter", sans-serif';
+
+  var cv = document.getElementById('c');
+  var x = cv.getContext('2d');
+  var W = 1280, H = 720;
+
+  // ---- Helpers --------------------------------------------------------------
+  function bn(v) { return String(v).replace(/[0-9]/g, function (d) { return '০১২৩৪৫৬৭৮৯'[d]; }); }
+  function clamp(v) { return Math.max(0, Math.min(1, v)); }
+  function ease(v) { v = clamp(v); return 1 - Math.pow(1 - v, 3); }
+  function at(t, start, dur) { return ease((t - start) / (dur || 0.5)); }
+  function rr(px, py, w, h, r) { x.beginPath(); x.roundRect(px, py, w, h, r); }
+  function card(px, py, w, h, r, fill, stroke, shadow) {
+    x.save();
+    if (shadow) { x.shadowColor = 'rgba(7,26,74,.10)'; x.shadowBlur = 30; x.shadowOffsetY = 10; }
+    rr(px, py, w, h, r); x.fillStyle = fill || K.white; x.fill();
+    x.restore();
+    if (stroke) { rr(px, py, w, h, r); x.lineWidth = 2; x.strokeStyle = stroke; x.stroke(); }
+  }
+  function text(s, px, py, font, color, align) {
+    x.font = font; x.fillStyle = color; x.textAlign = align || 'left'; x.textBaseline = 'alphabetic'; x.fillText(s, px, py);
+  }
+  function width(s, font) { x.font = font; return x.measureText(s).width; }
+  function pill(s, px, py, font, fg, bg, padX, h) {
+    var w = width(s, font) + (padX || 18) * 2, hh = h || 40;
+    rr(px, py, w, hh, hh / 2); x.fillStyle = bg; x.fill();
+    text(s, px + (padX || 18), py + hh / 2 + 7, font, fg);
+    return w;
+  }
+  function slide(alpha, dy, draw) {
+    if (alpha <= 0) return;
+    x.save(); x.globalAlpha *= alpha; x.translate(0, (1 - alpha) * (dy || 24)); draw(); x.restore();
+  }
+  function check(cx, cy, r, bg) {
+    x.beginPath(); x.arc(cx, cy, r, 0, Math.PI * 2); x.fillStyle = bg; x.fill();
+    x.beginPath(); x.moveTo(cx - r * .42, cy + r * .02); x.lineTo(cx - r * .1, cy + r * .34); x.lineTo(cx + r * .45, cy - r * .3);
+    x.lineWidth = r * .22; x.lineCap = 'round'; x.lineJoin = 'round'; x.strokeStyle = K.white; x.stroke();
+  }
+  // The logo from views/partials/logo.php (64x48 units).
+  var LOGO = [
+    ['M32 2 61 13 32 24 3 13Z', K.navy],
+    ['M15 18v8c0 4 7.6 7 17 7s17-3 17-7v-8L32 24Z', K.navy],
+    ['M2 34c9-4.5 20-4.5 30 1 10-5.5 21-5.5 30-1v10c-9-4.5-20-4.5-30 1-10-5.5-21-5.5-30-1Z', K.primary]
+  ].map(function (p) { return [new Path2D(p[0]), p[1]]; });
+  function logo(px, py, s) {
+    x.save(); x.translate(px, py); x.scale(s, s);
+    LOGO.forEach(function (p) { x.fillStyle = p[1]; x.fill(p[0]); });
+    x.beginPath(); x.moveTo(55, 15); x.lineTo(55, 27); x.lineWidth = 2.4; x.lineCap = 'round'; x.strokeStyle = K.navy; x.stroke();
+    x.beginPath(); x.arc(55, 28.5, 2.4, 0, Math.PI * 2); x.fillStyle = K.primary; x.fill();
+    x.beginPath(); x.moveTo(32, 35); x.lineTo(32, 45); x.lineWidth = 1.6; x.strokeStyle = K.white; x.stroke();
+    x.restore();
+  }
+  function wordmark(px, py, size, align) {
+    var f = '800 ' + size + 'px ' + EN_H;
+    var w1 = width('Academic', f), w2 = width('MCQ', f), start = align === 'center' ? px - (w1 + w2) / 2 : px;
+    text('Academic', start, py, f, K.navy); text('MCQ', start + w1, py, f, K.primary);
+  }
+  // A stacked fraction, as the quiz pages show it.
+  function frac(n, d, px, py, size, color) {
+    var f = '700 ' + size + 'px ' + EN, w = Math.max(width(n, f), width(d, f)) + 8;
+    text(n, px + w / 2, py - size * .15, f, color, 'center');
+    x.fillStyle = color; x.fillRect(px, py - 2, w, 3);
+    text(d, px + w / 2, py + size * .95, f, color, 'center');
+    return w;
+  }
+
+  function background(t) {
+    var g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#EEF6FF'); g.addColorStop(1, K.white);
+    x.fillStyle = g; x.fillRect(0, 0, W, H);
+    x.save(); x.globalAlpha = .55;
+    x.beginPath(); x.arc(1150 + Math.sin(t / 3) * 10, 90, 170, 0, Math.PI * 2); x.fillStyle = K.primary100; x.fill();
+    x.beginPath(); x.arc(110, 680 + Math.cos(t / 4) * 10, 140, 0, Math.PI * 2); x.fillStyle = K.primary200; x.fill();
+    x.restore();
+  }
+  function topBrand() { logo(60, 34, .72); wordmark(112, 66, 26); }
+  function steps(active) {
+    var labels = ['Pick', 'Answer', 'Learn', 'Rank'];
+    var cx0 = W / 2 - 3 * 70;
+    for (var i = 0; i < 4; i++) {
+      var on = i + 1 === active, done = i + 1 < active, cx = cx0 + i * 140;
+      if (i < 3) { x.fillStyle = done ? K.primary : K.border; x.fillRect(cx + 16, 677, 108, 3); }
+      x.beginPath(); x.arc(cx, 678, on ? 13 : 10, 0, Math.PI * 2); x.fillStyle = on || done ? K.primary : K.border; x.fill();
+      text(String(i + 1), cx, 683, '700 13px ' + EN, on || done ? K.white : K.soft, 'center');
+      text(labels[i], cx, 708, (on ? '700 ' : '500 ') + '14px ' + EN, on ? K.primary : K.soft, 'center');
+    }
+  }
+  function stepHead(t, n, en, bnTitle, lines, bnLine) {
+    slide(at(t, .1, .5), 20, function () { pill('STEP ' + n + '  ·  ধাপ ' + bn(n), 90, 150, '700 17px ' + EN, K.primary, K.primary100, 18, 42); });
+    // Shrink a long title to fit the left column (it must not run under the right-hand card).
+    var size = 56; while (size > 36 && width(en, '800 ' + size + 'px ' + EN_H) > 540) size -= 2;
+    slide(at(t, .3, .55), 24, function () { text(en, 90, 262, '800 ' + size + 'px ' + EN_H, K.navy); });
+    slide(at(t, .5, .55), 24, function () { text(bnTitle, 90, 318, '700 36px ' + BN, K.primary700); });
+    lines.forEach(function (l, i) { slide(at(t, .8 + i * .15, .5), 18, function () { text(l, 90, 384 + i * 36, '500 25px ' + EN, K.soft); }); });
+    slide(at(t, 1.2, .5), 18, function () { text(bnLine, 90, 400 + lines.length * 36, '500 23px ' + BN, K.soft); });
+  }
+
+  // ---- Scenes ---------------------------------------------------------------
+  var scenes = [
+    { d: 4.6, draw: function (t) {
+      slide(at(t, .15, .7), 30, function () { logo(W / 2 - 76, 150, 2.4); });
+      slide(at(t, .55, .6), 26, function () { wordmark(W / 2, 370, 78, 'center'); });
+      slide(at(t, .9, .6), 22, function () { text('Practice. Learn. Compete.', W / 2, 428, '600 30px ' + EN, K.soft, 'center'); });
+      slide(at(t, 1.2, .6), 22, function () { text('অনুশীলন • শেখা • প্রতিযোগিতা', W / 2, 482, '600 30px ' + BN, K.primary700, 'center'); });
+      slide(at(t, 1.6, .6), 18, function () {
+        var s = 'Chapter-based MCQ practice from ৳' + C.fee + ' per quiz', w = width(s, '600 21px ' + EN) + 44;
+        pill(s, W / 2 - w / 2, 528, '600 21px ' + EN, K.primary, K.primary100, 22, 46);
+      });
+    } },
+    { d: 6.6, draw: function (t) {
+      topBrand(); steps(1);
+      stepHead(t, 1, 'Pick a chapter', 'অধ্যায় বেছে নাও', ['Choose your class, subject', 'and chapter, or one topic.'], 'শ্রেণি, বিষয় আর অধ্যায় বেছে নাও।');
+      var rows = [['শ্রেণি ৫', 'Class 5'], ['গণিত', 'Mathematics'], ['ভগ্নাংশ', 'Fractions']];
+      rows.forEach(function (r, i) {
+        var a = at(t, .9 + i * .75, .5), sel = t > 1.35 + i * .75;
+        slide(a, 26, function () {
+          var py = 168 + i * 132;
+          card(700, py, 480, 104, 20, sel ? K.primary100 : K.white, sel ? K.primary : K.border, true);
+          x.beginPath(); x.arc(760, py + 52, 28, 0, Math.PI * 2); x.fillStyle = sel ? K.primary : K.primary100; x.fill();
+          text(String(i + 1), 760, py + 62, '700 26px ' + EN, sel ? K.white : K.primary, 'center');
+          text(r[0], 812, py + 47, '700 30px ' + BN, K.navy);
+          text(r[1], 812, py + 80, '500 21px ' + EN, K.soft);
+          if (sel) check(1136, py + 52, 18, K.success);
+        });
+        if (i < 2) slide(at(t, 1.5 + i * .75, .4), 0, function () { x.fillStyle = K.primary; x.fillRect(758, 272 + i * 132, 4, 28); });
+      });
+      slide(at(t, 3.6, .5), 16, function () {
+        var s = C.questions + ' MCQs ready  ·  ' + bn(C.questions) + 'টি প্রশ্ন তৈরি', w = width(s, '700 21px ' + EN) + 44;
+        pill(s, 940 - w / 2, 572, '700 21px ' + EN, K.successText, K.greenBg, 22, 46);
+      });
+    } },
+    { d: 8.2, draw: function (t) {
+      topBrand(); steps(2);
+      stepHead(t, 2, 'Answer ' + C.questions + ' MCQs', bn(C.questions) + 'টি প্রশ্নের উত্তর দাও', [C.easy + ' easy · ' + C.medium + ' medium · ' + C.hard + ' hard', C.minutes + ' minutes · ৳' + C.fee + ' per quiz'], 'প্রতিটি উত্তরের ব্যাখ্যা থাকে।');
+      slide(at(t, .7, .6), 30, function () {
+        card(660, 128, 540, 470, 24, K.white, K.border, true);
+        text('Question 1 of ' + C.questions, 696, 180, '700 21px ' + EN, K.navy);
+        x.fillStyle = K.primary100; rr(696, 198, 300, 8, 4); x.fill();
+        x.fillStyle = K.primary; rr(696, 198, 30 * 1, 8, 4); x.fill();
+        var left = Math.max(0, C.minutes * 60 - Math.floor(Math.max(0, t - .9))), mm = Math.floor(left / 60), ss = ('0' + (left % 60)).slice(-2);
+        card(1060, 152, 112, 44, 12, K.white, K.border, false);
+        text(mm + ':' + ss, 1116, 182, '700 22px ' + EN, K.navy, 'center');
+        var fw = frac('3', '7', 698, 270, 30, K.navy);
+        text('ভগ্নাংশটির লব কত?', 698 + fw + 14, 286, '700 30px ' + BN, K.navy);
+        var opts = [['A', '3'], ['B', '7'], ['C', '10'], ['D', '4']];
+        opts.forEach(function (o, i) {
+          var py = 330 + i * 64, pick = i === 0 && t > 3.2, right = i === 0 && t > 4.1;
+          card(696, py, 468, 52, 14, right ? K.greenBg : (pick ? K.primary100 : K.white), right ? K.success : (pick ? K.primary : K.border), false);
+          x.beginPath(); x.arc(724, py + 26, 15, 0, Math.PI * 2); x.fillStyle = right ? K.success : (pick ? K.primary : K.surface); x.fill();
+          text(o[0], 724, py + 32, '700 16px ' + EN, right || pick ? K.white : K.navy, 'center');
+          text(o[1], 754, py + 34, '600 22px ' + EN, K.text);
+          if (right) { check(1134, py + 26, 14, K.success); text('Correct', 1110, py + 33, '700 17px ' + EN, K.successText, 'right'); }
+        });
+      });
+    } },
+    { d: 7.2, draw: function (t) {
+      topBrand(); steps(3);
+      stepHead(t, 3, 'Learn from mistakes', 'ভুল থেকে শেখো', ['See your score, then review', 'every answer with its explanation.'], 'প্রতিটি ভুল ব্যাখ্যাসহ রিভিউ করো।');
+      slide(at(t, .7, .6), 30, function () {
+        card(660, 128, 540, 210, 24, K.white, K.border, true);
+        var p = .8 * at(t, 1.1, 1.4);
+        x.lineWidth = 16; x.lineCap = 'round';
+        x.beginPath(); x.arc(770, 233, 66, 0, Math.PI * 2); x.strokeStyle = K.border; x.stroke();
+        x.beginPath(); x.arc(770, 233, 66, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * p); x.strokeStyle = K.success; x.stroke();
+        text(Math.round(p * 10) + ' / 10', 770, 245, '800 30px ' + EN_H, K.navy, 'center');
+        text('Your score', 872, 214, '600 20px ' + EN, K.soft);
+        text('তোমার স্কোর', 872, 248, '700 26px ' + BN, K.navy);
+        text(Math.round(p * 100) + '%', 872, 292, '800 34px ' + EN_H, K.successText);
+      });
+      slide(at(t, 2.4, .6), 26, function () {
+        card(660, 360, 540, 168, 20, K.surface, K.border, false);
+        text('ব্যাখ্যা  ·  Explanation', 690, 400, '700 22px ' + BN, K.primary700);
+        text('ভগ্নাংশের উপরের সংখ্যাকে লব বলে।', 690, 446, '600 25px ' + BN, K.text);
+        var fw = frac('3', '7', 690, 486, 22, K.text);
+        text('এর লব 3', 690 + fw + 10, 500, '600 24px ' + BN, K.text);
+      });
+      slide(at(t, 3.6, .5), 16, function () { pill('Correct Me: report a wrong answer', 660, 548, '600 20px ' + EN, K.primary700, K.primary100, 20, 44); });
+    } },
+    { d: 7.6, draw: function (t) {
+      topBrand(); steps(4);
+      stepHead(t, 4, 'Build your rank', 'র‍্যাংক গড়ো', ['Keep a streak, master chapters,', 'climb the national rank.'], 'পয়েন্ট মানে সুনাম, টাকা নয়।');
+      slide(at(t, .7, .6), 30, function () {
+        card(660, 128, 540, 250, 24, K.white, K.border, true);
+        text('Streak  ·  স্ট্রিক', 692, 176, '700 23px ' + BN, K.navy);
+        var filled = Math.min(C.streak, Math.floor(C.streak * at(t, 1.1, 2.6)));
+        var cols = Math.min(C.streak, 13), size = 30, gap = 6;
+        for (var i = 0; i < C.streak; i++) {
+          var cx = 692 + (i % cols) * (size + gap), cy = 198 + Math.floor(i / cols) * (size + gap);
+          rr(cx, cy, size, size, 7); x.fillStyle = i < filled ? K.success : K.border; x.fill();
+        }
+        text(C.streak + ' quizzes, each ' + C.pass + '%+, within ' + C.window + ' hours', 692, 300, '600 20px ' + EN, K.soft);
+        if (t > 3.9) slide(at(t, 3.9, .4), 10, function () {
+          var s = '+' + C.streakPoints + ' Academic Point' + (C.streakPoints === 1 ? '' : 's'), w = width(s, '800 24px ' + EN_H) + 44;
+          pill(s, 692, 320, '800 24px ' + EN_H, K.white, K.primary, 22, 44);
+        });
+      });
+      var tiers = ['Starter', 'Bronze', 'Silver', 'Gold'], on = t > 4.6 ? 1 : 0;
+      slide(at(t, 2.2, .6), 20, function () {
+        var px = 660;
+        tiers.forEach(function (tier, i) {
+          var w = width(tier, '700 20px ' + EN) + 40, active = i === on;
+          rr(px, 412, w, 46, 23); x.fillStyle = active ? K.amber : K.white; x.fill();
+          x.lineWidth = 2; x.strokeStyle = active ? K.amber : K.border; x.stroke();
+          text(tier, px + 20, 442, '700 20px ' + EN, active ? K.white : K.soft);
+          px += w + (i < 3 ? 34 : 0);
+          if (i < 3) text('›', px - 22, 444, '700 26px ' + EN, K.soft, 'center');
+        });
+        text('Tiers rise with your points; points never go down.', 660, 500, '500 20px ' + EN, K.soft);
+      });
+    } },
+    { d: 5.2, draw: function (t) {
+      slide(at(t, .1, .6), 26, function () { logo(W / 2 - 48, 118, 1.5); });
+      slide(at(t, .4, .6), 26, function () { text('Start with ' + C.free + ' free quizzes', W / 2, 300, '800 58px ' + EN_H, K.navy, 'center'); });
+      slide(at(t, .7, .6), 22, function () { text('প্রথম ' + bn(C.free) + 'টি কুইজ ফ্রি, কোনো অ্যাকাউন্ট লাগবে না', W / 2, 366, '700 32px ' + BN, K.primary700, 'center'); });
+      slide(at(t, 1.1, .6), 18, function () {
+        var s = 'Sign up free  ·  ফ্রি অ্যাকাউন্ট খোলো', w = width(s, '700 26px ' + EN) + 70;
+        x.save(); x.shadowColor = 'rgba(6,101,252,.30)'; x.shadowBlur = 24; x.shadowOffsetY = 8;
+        rr(W / 2 - w / 2, 420, w, 66, 16); x.fillStyle = K.primary; x.fill(); x.restore();
+        text(s, W / 2, 462, '700 26px ' + EN, K.white, 'center');
+      });
+      slide(at(t, 1.6, .6), 14, function () { wordmark(W / 2, 572, 34, 'center'); text('Practice. Learn. Compete.', W / 2, 610, '600 20px ' + EN, K.soft, 'center'); });
+    } }
+  ];
+  var TOTAL = scenes.reduce(function (s, sc) { return s + sc.d; }, 0);
+
+  function frame(t) {
+    background(t);
+    var start = 0;
+    for (var i = 0; i < scenes.length; i++) {
+      var sc = scenes[i];
+      if (t < start + sc.d || i === scenes.length - 1) {
+        var lt = t - start;
+        // Fade between scenes: out over the last 0.35 s.
+        var fade = i === scenes.length - 1 ? 1 : clamp((sc.d - lt) / .35);
+        x.save(); x.globalAlpha = fade; sc.draw(lt); x.restore();
+        return;
+      }
+      start += sc.d;
+    }
+  }
+
+  // ---- Run --------------------------------------------------------------------
+  function fontsReady() {
+    var faces = ['800 40px Poppins', '700 30px Inter', '600 30px Inter', '500 25px Inter', '700 30px "Noto Sans Bengali"', '600 25px "Noto Sans Bengali"', '500 23px "Noto Sans Bengali"'];
+    return Promise.all(faces.map(function (f) { return document.fonts.load(f, 'Aঅ৳'); })).then(function () { return document.fonts.ready; });
+  }
+
+  fontsReady().then(function () {
+    if (MODE === 'poster') {                       // a still for <video poster>
+      frame(3.4);
+      document.title = 'POSTER_READY';
+      return;
+    }
+    if (MODE === 'encode') {
+      // Frame-exact: draw every frame at t = i / FPS, encode it with WebCodecs
+      // and mux a normal MP4 (correct duration, moov first for streaming).
+      // Live MediaRecorder output was fragmented and reported a 3 s duration.
+      var FPS = 30;
+      var report = function (type, body) { return fetch('/upload?type=' + encodeURIComponent(type), { method: 'POST', body: body }); };
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js';
+      s.onerror = function () { report('error', 'could not load mp4-muxer'); };
+      s.onload = function () {
+        var tries = ['avc1.640028', 'avc1.4d0028', 'avc1.42001f'].map(function (codec) {
+          return { codec: codec, width: W, height: H, bitrate: 1500000, framerate: FPS, avc: { format: 'avc' } };
+        });
+        (async function () {
+          var cfg = null;
+          for (var i = 0; i < tries.length && !cfg; i++) {
+            var r = await VideoEncoder.isConfigSupported(tries[i]);
+            if (r.supported) cfg = tries[i];
+          }
+          if (!cfg) { await report('error', 'no H.264 VideoEncoder'); return; }
+          var target = new Mp4Muxer.ArrayBufferTarget();
+          var muxer = new Mp4Muxer.Muxer({ target: target, video: { codec: 'avc', width: W, height: H, frameRate: FPS }, fastStart: 'in-memory' });
+          var failed = null;
+          var chunks = [], decCfg = null;
+          var enc = new VideoEncoder({ output: function (chunk, meta) {
+            muxer.addVideoChunk(chunk, meta); chunks.push(chunk);
+            if (meta && meta.decoderConfig && !decCfg) decCfg = meta.decoderConfig;
+          }, error: function (e) { failed = e; } });
+          enc.configure(cfg);
+          var frames = Math.round(TOTAL * FPS);
+          for (var f = 0; f <= frames && !failed; f++) {
+            frame(f / FPS);
+            var vf = new VideoFrame(cv, { timestamp: Math.round(f * 1e6 / FPS), duration: Math.round(1e6 / FPS) });
+            enc.encode(vf, { keyFrame: f % (FPS * 2) === 0 });
+            vf.close();
+            while (enc.encodeQueueSize > 8) await new Promise(function (r) { setTimeout(r, 4); });
+          }
+          if (failed) { await report('error', String(failed)); return; }
+          await enc.flush();
+          muxer.finalize();
+          if (params.verify) {
+            // Decode the very chunks that went into the MP4 and draw six of
+            // them, so a check sees what the file holds, not the canvas.
+            var sheet = document.createElement('canvas'); sheet.width = 1280; sheet.height = 480;
+            var sx = sheet.getContext('2d'), slots = {}, got = 0;
+            sx.fillStyle = '#222'; sx.fillRect(0, 0, 1280, 480);
+            [2.6, 8.5, 15.5, 23, 31, 37.5].forEach(function (sec, k) { slots[Math.round(Math.round(sec * FPS) * 1e6 / FPS)] = k; });
+            var dec = new VideoDecoder({ output: function (vf) {
+              var k = slots[vf.timestamp];
+              if (k !== undefined) { sx.drawImage(vf, (k % 3) * 427, Math.floor(k / 3) * 240, 425, 239); got++; }
+              vf.close();
+            }, error: function (e) { report('error', 'decode: ' + e); } });
+            dec.configure(decCfg);
+            chunks.forEach(function (c) { dec.decode(c); });
+            await dec.flush();
+            await report('sheet;decoded=' + got, await new Promise(function (r) { sheet.toBlob(r, 'image/png'); }));
+          }
+          await report('video/mp4;codecs=' + cfg.codec + ';frames=' + (frames + 1), target.buffer);
+          document.title = 'UPLOADED';
+        })().catch(function (e) { report('error', String(e)); });
+      };
+      document.head.appendChild(s);
+      return;
+    }
+    var p0 = performance.now();                    // preview: loop
+    (function loop() { frame(((performance.now() - p0) / 1000) % (TOTAL + 1)); requestAnimationFrame(loop); })();
+  });
+})();
+</script>
+</body>
+</html>

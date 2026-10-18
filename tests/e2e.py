@@ -874,5 +874,18 @@ st, _, h = sp.req("/faq")
 check("a signed-in student's profile language is the default", "Frequently Asked Questions" in h)
 sql(f"UPDATE user_settings SET language='bn' WHERE user_id={RAHIM}")
 
+print("\n[18] Intro video on How It Works")
+st, _, h = Browser().req("/how-it-works")
+vsrc = re.search(r'<source src="([^"]*intro\.mp4[^"]*)" type="video/mp4"', h)
+check("How It Works plays the intro video, with a poster", st == 200 and vsrc is not None and 'poster="' in h and "Intro video coming soon" not in h)
+def fetch(url, rng=None):
+    rq = urllib.request.Request(url if url.startswith("http") else B + url, headers={"Range": rng} if rng else {})
+    with urllib.request.urlopen(rq) as r: return r.status, r.headers, r.read()
+if vsrc:
+    s1, hd, _ = fetch(vsrc.group(1).replace("&amp;", "&"))
+    check("the video is served as video/mp4 and accepts byte ranges (seeking)", s1 == 200 and hd.get("Content-Type", "").startswith("video/mp4") and hd.get("Accept-Ranges") == "bytes", dict(hd))
+    s2, _, head = fetch(vsrc.group(1).replace("&amp;", "&"), "bytes=0-65535")
+    check("it is a normal MP4 with its index first (starts streaming at once)", s2 == 206 and head[4:8] == b"ftyp" and 0 < head.find(b"moov") < max(head.find(b"mdat"), 1 << 30))
+
 print(f"\n{ok} passed, {fail} failed")
 sys.exit(1 if fail else 0)

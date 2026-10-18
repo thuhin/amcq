@@ -100,8 +100,13 @@ size doesn't win), What Students Say, Watch Video.
   Contact Us page and footer come from `CONTACT_*` in `constants.php`; set the
   real ones there (or per server in `env.php`). Messages are stored in
   `contact_messages`, not emailed; read them in `/admin/messages`.
-- **Intro video.** Set `INTRO_VIDEO_URL` (a YouTube embed URL) in `env.php`;
-  until then How It Works shows "coming soon".
+- **Intro video: no voice-over.** How It Works plays `asset/video/intro.mp4`, a
+  39-second animated walkthrough with English and Bangla on screen and no sound.
+  It is rendered from `docs/intro-video/intro.html` by
+  `python docs/intro-video/render.py` (needs PHP, Chrome and the internet), which
+  reads the numbers it shows from `constants.php`: re-run it when a rule changes.
+  A real recording can replace it: set `INTRO_VIDEO_URL` (a YouTube embed URL)
+  in `env.php`, and that wins.
 - **Testimonials.** Only the demo seed has any (the design's three samples).
   Real ones need a real student and recorded guardian consent.
 - **Content.** 50 sample questions (Fractions, Decimals, Percentage). Other
@@ -201,7 +206,7 @@ example file says so for development), or the simulated top-up checks fail. If `
 is not on the PATH, set `PHP_BIN` to a PHP 7.4 binary (the admin command-line checks
 call it). Point the script at another URL with `AMCQ_URL`.
 
-306 checks (89 for the site, 129 for the admin panel, 79 for students admin, invites, the competition rounds and certificates, 9 for the bilingual FAQ) drive it like a browser and
+309 checks (89 for the site, 129 for the admin panel, 79 for students admin, invites, the competition rounds and certificates, 9 for the bilingual FAQ, 3 for the intro video) drive it like a browser and
 verify the database after each step:
 grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
 streak and mastery rules, double-submit safety, the timer and pause, Try Harder,
