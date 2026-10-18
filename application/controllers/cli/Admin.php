@@ -17,12 +17,18 @@ defined('BASEPATH') OR exit('No direct script access allowed');
  */
 class Admin extends CI_Controller
 {
+	/** @var bool a person at a terminal (TRUE) or piped input (FALSE) */
+	private $interactive;
+
 	public function __construct()
 	{
 		parent::__construct();
 		if ( ! is_cli()) {
 			show_404();
 		}
+		// Decided before anything is read: asking after a read loses the piped
+		// lines PHP has already buffered (and warns about it) on Linux.
+		$this->interactive = stream_isatty(STDIN);
 		$this->db->query('SET time_zone = ?', array(APP_TZ_OFFSET));
 		$this->load->model('Admin_model');
 	}
@@ -91,7 +97,7 @@ class Admin extends CI_Controller
 	/** Hidden where the terminal allows it; asked twice when a person is typing. */
 	private function ask_password()
 	{
-		$interactive = stream_isatty(STDIN);
+		$interactive = $this->interactive;
 		$hide = $interactive && DIRECTORY_SEPARATOR === '/';
 		if ($interactive && ! $hide) {
 			fwrite(STDOUT, '(This terminal cannot hide typing; the password will be visible.)' . PHP_EOL);
