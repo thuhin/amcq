@@ -90,8 +90,9 @@ contradiction plus an open legal question about peer point wagering.
 - `database/test_data/*_admin_test_data.sql` creates a dev admin with a known
   password. Never load it on a server. The click-to-fill shield on `/admin/login`
   prints that password into the page, so it is gated three ways (development, a local
-  host name, and `ADMIN_DEV_LOGIN_*` defined in the gitignored `env.php`): never put
-  those constants in tracked code or on a server.
+  host name, and `ADMIN_DEV_LOGIN_*` defined in the gitignored `env.php`). A shared dev
+  server may opt in with `ADMIN_DEV_LOGIN_ALLOW_REMOTE` in its own `env.php`; never
+  put these constants in tracked code or on production.
 
 ## More rules that are easy to get wrong
 

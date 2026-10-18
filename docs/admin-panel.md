@@ -219,7 +219,13 @@ command above, and do **not** load `database/test_data/`.
 password into the page, it is rendered only when all three hold: the app runs in
 `development`, the server name is local (`.test`, `.localhost` or `127.0.0.1`), and
 both constants are defined. The credentials live only in the gitignored `env.php`,
-never in tracked code. Leave them out on every server.
+never in tracked code.
+
+On a shared **dev server** (not a local host name) it can be switched on too, by
+adding `define('ADMIN_DEV_LOGIN_ALLOW_REMOTE', TRUE);` to that server's `env.php`.
+Then anyone who can open `/admin/login` can read the password in the page source,
+so restrict `/admin` by IP in nginx, and never do this on production (production
+mode never shows it anyway).
 
 ## 10. Tests
 

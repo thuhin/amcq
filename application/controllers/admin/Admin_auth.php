@@ -34,10 +34,11 @@ class Admin_auth extends Admin_Controller
 	/**
 	 * The click-to-fill login for local testing, or NULL.
 	 *
-	 * Three things must all be true, because this prints a password into the
-	 * page: the app runs in development, the server name is a local one, and
-	 * the machine's own env.php (never committed) defines the credentials.
-	 * A server that has none of that renders nothing.
+	 * This prints a password into the page, so it needs: the app runs in
+	 * development, the machine's own env.php (never committed) defines the
+	 * credentials, and the server name is a local one, unless that env.php
+	 * also opts in with ADMIN_DEV_LOGIN_ALLOW_REMOTE (a shared dev server; then
+	 * anyone who can open the page can read the password).
 	 */
 	private function dev_login()
 	{
@@ -48,7 +49,9 @@ class Admin_auth extends Admin_Controller
 			return NULL;
 		}
 		$host = strtolower((string) $this->input->server('SERVER_NAME'));
-		if ( ! preg_match('~(^|\.)(test|localhost)$|^127\.0\.0\.1$~', $host)) {
+		$local = preg_match('~(^|\.)(test|localhost)$|^127\.0\.0\.1$~', $host);
+		$remote_ok = defined('ADMIN_DEV_LOGIN_ALLOW_REMOTE') && ADMIN_DEV_LOGIN_ALLOW_REMOTE === TRUE;
+		if ( ! $local && ! $remote_ok) {
 			return NULL;
 		}
 		return array('email' => ADMIN_DEV_LOGIN_EMAIL, 'password' => ADMIN_DEV_LOGIN_PASSWORD);
