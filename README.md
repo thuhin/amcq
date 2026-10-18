@@ -57,6 +57,7 @@ can stay the same.
 | Contact Us | no mockup; site design language | `/contact` |
 | Top Schools This Week, testimonials | homepage designs | `/schools`, `/testimonials` |
 | Leaderboard, Competition, Pricing, How It Works | §4.6–4.8 | |
+| **Admin panel**: questions, Correct Me, messages, testimonials, competition (read only) | no mockup; site design language | `/admin` ([docs/admin-panel.md](docs/admin-panel.md)) |
 
 Rules implemented: 5 easy / 3 medium / 2 hard per quiz; Tk 1 wallet debit for
 signed-in students; 3 free quizzes for guests, kept on signup; streak of 25 quizzes
@@ -75,14 +76,16 @@ size doesn't win), What Students Say, Watch Video.
   simulated; elsewhere the page says "coming soon".
 - **SMS.** No gateway. In development the OTP is shown on screen; elsewhere sign-in
   cannot complete until a gateway is added in `Auth::login()`.
-- **Admin.** No screens to review Correct Me submissions, verify questions or run
-  the competition rounds. Competition registration is closed (`status = 'draft'`).
+- **Admin gaps.** The admin panel (`/admin`) covers questions, Correct Me, messages and
+  testimonials, but not students, wallets, or running the competition. Its competition
+  page is read only: registration stays closed (`status = 'draft'`) because the rounds
+  are not built.
 - **Referrals, certificates, notifications UI.** Tables exist; no pages yet.
 - **Legal pages.** Placeholders; the text must come from the business.
 - **Contact details are placeholders.** Address, phone, email and hours on the
   Contact Us page and footer come from `CONTACT_*` in `constants.php`; set the
   real ones there (or per server in `env.php`). Messages are stored in
-  `contact_messages`, not emailed; there is no screen to read them yet.
+  `contact_messages`, not emailed; read them in `/admin/messages`.
 - **Intro video.** Set `INTRO_VIDEO_URL` (a YouTube embed URL) in `env.php`;
   until then How It Works shows "coming soon".
 - **Testimonials.** Only the demo seed has any (the design's three samples).
@@ -127,6 +130,17 @@ size doesn't win), What Students Say, Watch Video.
 4. **Demo login**: phone `01700000001` (Rahim, Silver Scholar, ৳50 wallet). The OTP
    appears on screen in development.
 
+5. **Admin**: create one from the command line (it asks for email, name, password;
+   there is no web screen that creates admins), then open `/admin`:
+
+   ```bash
+   php index.php cli/admin create
+   ```
+
+   `database/reset_local.sh` also loads a development admin, `admin@amcq.test`
+   (password in `database/test_data/20261018100100_admin_test_data.sql`). That
+   account is test data: never load it on a server.
+
 ## Migrations (existing databases)
 
 Fresh install: `database/reset_local.sh` builds everything from `database/`.
@@ -168,11 +182,18 @@ php -S 127.0.0.1:8899 tests/dev_router.php &
 python3 tests/e2e.py        # set env.php URLs to http://127.0.0.1:8899/ first
 ```
 
-89 checks drive the site like a browser and verify the database after each step:
+`env.php` needs `ENABLE_LIVE_PAYMENTS` and `ENABLE_AI_GENERATION` set to `FALSE` (the
+example file says so for development), or the simulated top-up checks fail. If `php`
+is not on the PATH, set `PHP_BIN` to a PHP 7.4 binary (the admin command-line checks
+call it). Point the script at another URL with `AMCQ_URL`.
+
+218 checks (89 for the site, 129 for the admin panel) drive it like a browser and
+verify the database after each step:
 grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
 streak and mastery rules, double-submit safety, the timer and pause, Try Harder,
-the design pages, and that every wallet
-and points total equals the sum of its ledger.
+the design pages, that every wallet
+and points total equals the sum of its ledger, and the admin panel's sign-in
+lock-out, question workflow, Correct Me decisions, messages and testimonial consent.
 
 ## Conventions
 

@@ -114,3 +114,35 @@
     ta.addEventListener('input', update); update();
   });
 })();
+
+/* Admin question editor: list only the topics of the chosen chapter. Without
+   JS every topic is listed and the server checks the pair. */
+(function () {
+  var chapter = document.querySelector('select[name=chapter_id][data-filters-topics]');
+  var topic = document.querySelector('select[name=topic_id]');
+  if (!chapter || !topic) return;
+  function sync() {
+    var keep = false;
+    topic.querySelectorAll('option[data-chapter]').forEach(function (o) {
+      var show = o.getAttribute('data-chapter') === chapter.value;
+      o.hidden = !show; o.disabled = !show;
+      if (show && o.selected) keep = true;
+    });
+    if (!keep) topic.value = '';
+  }
+  chapter.addEventListener('change', sync);
+  sync();
+})();
+
+/* Admin sign-in, development only: the shield button fills in the test login.
+   The button exists only when the server renders it (see Admin_auth::dev_login). */
+(function () {
+  var btn = document.querySelector('[data-dev-login]');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var form = btn.closest('.auth__card').querySelector('form');
+    form.elements['email'].value = btn.getAttribute('data-email');
+    form.elements['password'].value = btn.getAttribute('data-password');
+    form.querySelector('button[type=submit]').focus();
+  });
+})();

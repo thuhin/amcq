@@ -92,3 +92,7 @@ class MY_Controller extends CI_Controller
 		$this->load->view('layout/footer', $data);
 	}
 }
+
+// Admin pages share a second base class. CodeIgniter only auto-loads MY_Controller,
+// so it is pulled in here, after MY_Controller exists.
+require_once APPPATH . 'core/Admin_Controller.php';

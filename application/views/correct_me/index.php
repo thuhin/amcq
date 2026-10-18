@@ -1,7 +1,7 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 $status = array('pending' => array('Pending', 'pill-warn', 'clock'), 'approved' => array('Approved', 'pill-ok', 'check'), 'rejected' => array('Not approved', 'pill-muted', 'x-circle')); ?>
 <h1 class="page-title">Correct Me</h1>
-<p class="amcq-muted">Found a mistake in a question? Report it from the answer review. Each approved correction earns 1 Academic Point.</p>
+<p class="amcq-muted">Found a mistake in a question? Report it from the answer review. Each approved correction earns <?= (int) CORRECTION_APPROVED_POINTS ?> Academic Point<?= CORRECTION_APPROVED_POINTS === 1 ? "" : "s" ?>.</p>
 <div class="card">
   <h2>Your path · <?= (int) $approved ?> approved</h2>
   <ol class="career">
@@ -19,7 +19,7 @@ $status = array('pending' => array('Pending', 'pill-warn', 'clock'), 'approved' 
     <?php foreach ($requests as $r): list($label, $cls, $ic) = $status[$r['status']]; ?>
     <li class="card-list__item"><span class="<?= $cls ?>"><?= icon($ic) ?> <?= $label ?></span>
       <div><strong><?= math_text(mb_strimwidth($r['stem'], 0, 90, '…')) ?></strong><p class="amcq-muted"><?= e($r['what_is_wrong']) ?></p>
-        <?php if ($r['status'] === 'approved'): ?><small class="ok">Correction approved · +1 Academic Point</small><?php endif; ?>
+        <?php if ($r['status'] === 'approved'): ?><small class="ok">Correction approved · +<?= (int) CORRECTION_APPROVED_POINTS ?> Academic Point<?= CORRECTION_APPROVED_POINTS === 1 ? "" : "s" ?></small><?php endif; ?>
         <?php if ($r['review_note']): ?><small class="amcq-muted">Reviewer: <?= e($r['review_note']) ?></small><?php endif; ?></div>
       <time class="amcq-muted small"><?= date('j M Y', strtotime($r['created_at'])) ?></time></li>
     <?php endforeach; ?>

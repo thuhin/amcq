@@ -69,6 +69,30 @@ contradiction plus an open legal question about peer point wagering.
 - Controllers are thin; views are plain PHP under `application/views/`.
 - `MY_Controller` resolves the user or guest and renders the layout.
 
+## Admin panel (`/admin`, full detail in `docs/admin-panel.md`)
+
+- **Admins are `users` rows** (`user_type = 'admin'`) created only by
+  `php index.php cli/admin create`. No web screen may create or promote an admin.
+- **Separate session.** Admin identity is `admin_id`/`admin_seen`, never the student
+  `user_id`. `Admin_Controller` re-reads the account on every request and enforces
+  the idle timeout. Admin controllers are named `Admin_*` (a class name must not
+  collide with a student controller such as `Testimonials`) and routed explicitly.
+- **Only `published` questions are served.** Verify/publish needs four options A-D,
+  one correct, an explanation and a source. Editing live content returns a question
+  to `in_review`. Update options **in place by label**; never delete and re-insert
+  them, because attempt answers point at them. No hard delete: retire.
+- **Correct Me decisions are final.** Points go through `Points_model::award()` in
+  the transaction that locks the report row. A rejection needs a reason: students read it.
+- **A testimonial is published only with recorded guardian consent**; changing its
+  wording clears the consent.
+- **Competition is read only in the admin** until Round 1 and the Final exist:
+  opening registration would take Tk 99 for an event that cannot run.
+- `database/test_data/*_admin_test_data.sql` creates a dev admin with a known
+  password. Never load it on a server. The click-to-fill shield on `/admin/login`
+  prints that password into the page, so it is gated three ways (development, a local
+  host name, and `ADMIN_DEV_LOGIN_*` defined in the gitignored `env.php`): never put
+  those constants in tracked code or on a server.
+
 ## More rules that are easy to get wrong
 
 - **Timezone.** PHP and the MySQL session are both pinned to +06:00 (constants.php

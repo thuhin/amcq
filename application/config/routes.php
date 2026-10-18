@@ -55,4 +55,29 @@ $route['leaderboard']                    = 'leaderboard/index';
 $route['competition']                    = 'competition/index';
 $route['competition/register']           = 'competition/register';
 $route['contact']                        = 'contact/index';
+
+// Admin panel (docs/admin-panel.md). Controllers are prefixed Admin_ so their
+// class names can never collide with the student ones (Testimonials, Competition).
+$route['admin']                              = 'admin/admin_dashboard/index';
+$route['admin/login']                        = 'admin/admin_auth/login';
+$route['admin/logout']                       = 'admin/admin_auth/logout';
+$route['admin/password']                     = 'admin/admin_auth/password';
+$route['admin/questions']                    = 'admin/admin_questions/index';
+$route['admin/questions/new']                = 'admin/admin_questions/edit';
+$route['admin/questions/(:num)']             = 'admin/admin_questions/edit/$1';
+$route['admin/questions/(:num)/status']      = 'admin/admin_questions/status/$1';
+$route['admin/corrections']                  = 'admin/admin_corrections/index';
+$route['admin/corrections/(:num)']           = 'admin/admin_corrections/review/$1';
+$route['admin/corrections/(:num)/approve']   = 'admin/admin_corrections/approve/$1';
+$route['admin/corrections/(:num)/reject']    = 'admin/admin_corrections/reject/$1';
+$route['admin/messages']                     = 'admin/admin_messages/index';
+$route['admin/messages/(:num)']              = 'admin/admin_messages/show/$1';
+$route['admin/messages/(:num)/status']       = 'admin/admin_messages/status/$1';
+$route['admin/testimonials']                 = 'admin/admin_testimonials/index';
+$route['admin/testimonials/new']             = 'admin/admin_testimonials/edit';
+$route['admin/testimonials/(:num)']          = 'admin/admin_testimonials/edit/$1';
+$route['admin/testimonials/(:num)/publish']  = 'admin/admin_testimonials/publish/$1';
+$route['admin/testimonials/(:num)/unpublish'] = 'admin/admin_testimonials/unpublish/$1';
+$route['admin/testimonials/(:num)/delete']   = 'admin/admin_testimonials/delete/$1';
+$route['admin/competition']                  = 'admin/admin_competition/index';
 $route['(how-it-works|pricing|faq|about|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';

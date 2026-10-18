@@ -175,3 +175,18 @@ defined('CONTACT_EMAIL')    OR define('CONTACT_EMAIL',    'support@academicmcq.c
 defined('CONTACT_HOURS')    OR define('CONTACT_HOURS',    'Saturday – Thursday, 10:00 AM – 6:00 PM');
 defined('CONTACT_MAP_URL')  OR define('CONTACT_MAP_URL',  '');   // e.g. a Google Maps link; empty hides the button
 define('CONTACT_LIMIT_PER_HOUR', 5);                             // messages per IP address
+
+// "Correct Me": one Academic Point per approved correction (guideline §5.5).
+define('CORRECTION_APPROVED_POINTS', 1);
+
+/*
+| Admin panel (/admin). Admins are `users` rows with user_type = 'admin' and a
+| password; they never sign in through the student phone/OTP flow, and the
+| admin session is separate from the student one.
+*/
+define('ADMIN_PASSWORD_MIN_LENGTH', 10);
+define('ADMIN_SESSION_IDLE_MINUTES', 60);     // signed out after this long without a request
+define('ADMIN_LOGIN_MAX_FAILS',      5);      // wrong passwords per email...
+define('ADMIN_LOGIN_MAX_FAILS_IP',   20);     // ...and per IP address,
+define('ADMIN_LOGIN_LOCK_MINUTES',   15);     // within this window, then locked out
+define('ADMIN_PAGE_SIZE',            25);     // rows per page in admin lists

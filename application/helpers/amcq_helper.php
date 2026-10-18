@@ -128,3 +128,27 @@ function subject_style($slug)
 	// [icon, colour, short label for the phone subject tiles (design 04)]
 	return isset($map[$slug]) ? $map[$slug] : array('book', 'blue', NULL);
 }
+
+/**
+ * Status pill for the admin lists. Always carries its text, never colour alone.
+ * Covers question, correction, message and testimonial statuses.
+ */
+function status_badge($status)
+{
+	$map = array(
+		'draft'     => array('Draft',        'muted'),
+		'in_review' => array('In review',    'warn'),
+		'verified'  => array('Verified',     'primary'),
+		'published' => array('Published',    'ok'),
+		'retired'   => array('Retired',      'muted'),
+		'pending'   => array('Pending',      'warn'),
+		'approved'  => array('Approved',     'ok'),
+		'rejected'  => array('Not approved', 'muted'),
+		'new'       => array('New',          'warn'),
+		'read'      => array('Read',         'muted'),
+		'replied'   => array('Replied',      'primary'),
+		'closed'    => array('Closed',       'muted'),
+	);
+	list($label, $tone) = isset($map[$status]) ? $map[$status] : array(ucfirst((string) $status), 'muted');
+	return '<span class="badge badge--' . $tone . '">' . e($label) . '</span>';
+}

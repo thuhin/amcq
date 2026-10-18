@@ -38,6 +38,18 @@ class Competition_model extends CI_Model
 			array('competition_id' => $competition_id, 'user_id' => $user_id))->row_array();
 	}
 
+	/** Every competition with its registration counts, newest first (admin, read only). */
+	public function overview()
+	{
+		return $this->db->query(
+			"SELECT c.*, cl.name AS class_name,
+			        (SELECT COUNT(*) FROM competition_registrations r WHERE r.competition_id = c.id) AS registrations,
+			        (SELECT COUNT(*) FROM competition_registrations r WHERE r.competition_id = c.id AND r.fee_paid = 1) AS paid
+			 FROM competitions c LEFT JOIN classes cl ON cl.id = c.class_id
+			 ORDER BY c.year DESC, c.id DESC"
+		)->result_array();
+	}
+
 	public function registration_open(array $c)
 	{
 		return $c['status'] === 'registration';

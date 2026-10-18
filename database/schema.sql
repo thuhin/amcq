@@ -760,6 +760,20 @@ CREATE TABLE contact_messages (
     CONSTRAINT ck_contact_reachable CHECK (phone IS NOT NULL OR email IS NOT NULL)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Admin panel sign-ins (/admin/login). Admins are users rows with
+-- user_type = 'admin'. This table drives the lock-out after repeated wrong
+-- passwords and records who signed in, from where, and when.
+DROP TABLE IF EXISTS admin_login_attempts;
+CREATE TABLE admin_login_attempts (
+    id              BIGINT UNSIGNED PRIMARY KEY AUTO_INCREMENT,
+    email           VARCHAR(100) NOT NULL,          -- as typed, lower-cased
+    ip_address      VARCHAR(45)  NOT NULL,
+    succeeded       TINYINT(1)   NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_admin_attempt_email (email, created_at),
+    KEY idx_admin_attempt_ip (ip_address, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- CodeIgniter database session driver (sess_save_path = 'ci_sessions').
 DROP TABLE IF EXISTS ci_sessions;
 CREATE TABLE ci_sessions (
