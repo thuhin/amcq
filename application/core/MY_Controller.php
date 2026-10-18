@@ -57,6 +57,31 @@ class MY_Controller extends CI_Controller
 		return $token;
 	}
 
+	/**
+	 * Language for pages written in both Bangla and English (the FAQ so far).
+	 * ?lang=bn|en switches and is remembered for the visit; otherwise the
+	 * signed-in student's profile setting; otherwise Bangla, like <html lang>.
+	 */
+	protected function content_lang()
+	{
+		$want = $this->input->get('lang');
+		if (in_array($want, array('bn', 'en'), TRUE)) {
+			$this->session->set_userdata('content_lang', $want);
+			return $want;
+		}
+		$kept = $this->session->userdata('content_lang');
+		if (in_array($kept, array('bn', 'en'), TRUE)) {
+			return $kept;
+		}
+		if ($this->user) {
+			$row = $this->db->select('language')->get_where('user_settings', array('user_id' => $this->user['id']))->row_array();
+			if ($row && in_array($row['language'], array('bn', 'en'), TRUE)) {
+				return $row['language'];
+			}
+		}
+		return 'bn';
+	}
+
 	protected function require_login()
 	{
 		if ( ! $this->user) {

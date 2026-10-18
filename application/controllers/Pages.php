@@ -21,7 +21,21 @@ class Pages extends MY_Controller
 			show_404();
 		}
 		$view = in_array($slug, array('how-it-works', 'pricing', 'faq'), TRUE) ? 'pages/' . str_replace('-', '_', $slug) : 'pages/policy';
-		$this->render($view, array('slug' => $slug, 'heading' => self::TITLES[$slug][0]),
-			array('title' => self::TITLES[$slug][0], 'nav' => self::TITLES[$slug][1]));
+		$data = array('slug' => $slug, 'heading' => self::TITLES[$slug][0]);
+		$title = self::TITLES[$slug][0];
+		if ($slug === 'faq') {
+			// The answers restate live rules, so they read them rather than retype them.
+			$this->load->model(array('Competition_model', 'Points_model', 'Curriculum_model'));
+			$c = $this->Competition_model->current();
+			$data['lang']    = $this->content_lang();
+			$data['comp']    = $c;
+			$data['winners'] = $c ? $this->Competition_model->winner_count($c['id']) : 0;
+			$data['tiers']   = $this->Points_model->tiers();
+			$data['classes'] = array_values(array_filter($this->Curriculum_model->classes(1), function ($k) { return $k['is_active']; }));
+			if ($data['lang'] === 'bn') {
+				$title = 'প্রায়ই জিজ্ঞাসিত প্রশ্ন';
+			}
+		}
+		$this->render($view, $data, array('title' => $title, 'nav' => self::TITLES[$slug][1]));
 	}
 }

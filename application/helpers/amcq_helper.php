@@ -35,6 +35,12 @@ function taka($amount)
 	return '৳' . number_format((float) $amount, 2);
 }
 
+/** Western digits to Bangla digits (০-৯), for the Bangla version of a page. */
+function bn_digits($text)
+{
+	return strtr((string) $text, array('0' => '০', '1' => '১', '2' => '২', '3' => '৩', '4' => '৪', '5' => '৫', '6' => '৬', '7' => '৭', '8' => '৮', '9' => '৯'));
+}
+
 /** Points are whole numbers with thousands separators, never a currency sign. */
 function points($n)
 {

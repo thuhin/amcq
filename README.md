@@ -53,7 +53,8 @@ can stay the same.
 | Sign in (phone → OTP → name/class) | §4.9 | `/login` |
 | My Progress, Rank, Wallet, Profile | §5.2–5.8 | `/progress`, `/rank`, `/wallet`, `/profile` |
 | Correct Me | §5.5 | `/correct-me` |
-| Search, Notifications, FAQ | header/sidebar in designs | `/search`, `/notifications`, `/faq` |
+| Search, Notifications | header/sidebar in designs | `/search`, `/notifications` |
+| FAQ in Bangla and English (toggle; remembered for the visit; a student's profile language is the default) | site design language | `/faq`, `/faq?lang=en` |
 | Certificates: list, public printable page, verify a code | sidebar in design 12 | `/certificates`, `/certificate/{code}`, `/certificates/verify` |
 | Invite Friends (tracking only, no reward) | no mockup; site design language | `/invite`, `/signup?ref=CODE` |
 | Contact Us | no mockup; site design language | `/contact` |
@@ -200,7 +201,7 @@ example file says so for development), or the simulated top-up checks fail. If `
 is not on the PATH, set `PHP_BIN` to a PHP 7.4 binary (the admin command-line checks
 call it). Point the script at another URL with `AMCQ_URL`.
 
-297 checks (89 for the site, 129 for the admin panel, 79 for students admin, invites, the competition rounds and certificates) drive it like a browser and
+306 checks (89 for the site, 129 for the admin panel, 79 for students admin, invites, the competition rounds and certificates, 9 for the bilingual FAQ) drive it like a browser and
 verify the database after each step:
 grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
 streak and mastery rules, double-submit safety, the timer and pause, Try Harder,

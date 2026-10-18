@@ -159,3 +159,23 @@
     else { document.execCommand('copy'); done(); }
   });
 })();
+
+/* FAQ: filter the questions as you type. Without JS every question is listed. */
+(function () {
+  var input = document.querySelector('[data-faq-search]');
+  if (!input) return;
+  var items = Array.prototype.slice.call(document.querySelectorAll('[data-faq-item]'));
+  var groups = Array.prototype.slice.call(document.querySelectorAll('[data-faq-group]'));
+  var empty = document.querySelector('[data-faq-empty]');
+  input.addEventListener('input', function () {
+    var q = input.value.trim().toLowerCase();
+    var shown = 0;
+    items.forEach(function (it) {
+      var hit = !q || it.textContent.toLowerCase().indexOf(q) !== -1;
+      it.hidden = !hit;
+      if (hit) { shown++; if (q) it.open = true; }
+    });
+    groups.forEach(function (g) { g.hidden = !g.querySelector('[data-faq-item]:not([hidden])'); });
+    empty.hidden = shown !== 0;
+  });
+})();

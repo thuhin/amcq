@@ -130,7 +130,8 @@ define('QUIZ_FEE_TAKA',            1.00);  // per attempt
 define('COMPETITION_FEE_TAKA',     99.00); // one-time registration
 define('STREAK_PASS_PERCENTAGE',   60);    // each quiz must score 60%+
 define('STREAK_REQUIRED_QUIZZES',  25);    // 25 qualifying quizzes...
-define('STREAK_WINDOW_HOURS',      100);   // ...within 100 hours = 1 point
+define('STREAK_WINDOW_HOURS',      100);
+define('STREAK_POINTS',            1);     // Academic Points per completed streak   // ...within 100 hours = 1 point
 
 // Daily practice mix (blueprint §9): QUIZ_QUESTION_COUNT = easy + medium + hard.
 define('QUIZ_MIX_EASY',   5);

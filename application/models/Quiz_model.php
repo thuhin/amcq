@@ -445,7 +445,7 @@ class Quiz_model extends CI_Model
 		$earned = 0;
 		$completed = (int) $s['completed_streaks'];
 		if ($count >= STREAK_REQUIRED_QUIZZES) {
-			$earned = $this->Points_model->award($user_id, 'streak', 1, 'attempt', $attempt_id,
+			$earned = $this->Points_model->award($user_id, 'streak', STREAK_POINTS, 'attempt', $attempt_id,
 				'Streak completed: ' . STREAK_REQUIRED_QUIZZES . ' quizzes at ' . STREAK_PASS_PERCENTAGE . '%+');
 			$completed++;
 			$this->db->query('INSERT IGNORE INTO user_badges (user_id, badge_id) SELECT ?, id FROM badges WHERE code = ?',
