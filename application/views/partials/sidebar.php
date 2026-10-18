@@ -8,6 +8,7 @@ $items = array(
 	'competition'  => array('Competitions', 'competition', 'trophy'),
 	'wallet'       => array('Wallet', 'wallet', 'wallet'),
 	'correct'      => array('Correct Me', 'correct-me', 'pencil'),
+	'invite'       => array('Invite Friends', 'invite', 'users'),
 	'certificates' => array('Certificates', 'certificates', 'certificate'),
 	'profile'      => array('Profile & Settings', 'profile', 'user'),
 );

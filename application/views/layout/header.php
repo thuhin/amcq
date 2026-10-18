@@ -67,6 +67,7 @@ $links = array(
             <a href="<?= site_url('wallet') ?>"><?= icon('wallet') ?> Wallet</a>
             <a href="<?= site_url('correct-me') ?>"><?= icon('pencil') ?> Correct Me</a>
             <a href="<?= site_url('certificates') ?>"><?= icon('certificate') ?> Certificates</a>
+            <a href="<?= site_url('invite') ?>"><?= icon('users') ?> Invite Friends</a>
             <a href="<?= site_url('profile') ?>"><?= icon('user') ?> Profile &amp; Settings</a>
             <?= form_open('logout', array('class' => 'menu-panel__form')) ?><button type="submit"><?= icon('logout') ?> Sign out</button><?= form_close() ?>
           </div>

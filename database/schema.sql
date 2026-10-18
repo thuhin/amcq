@@ -598,6 +598,8 @@ CREATE TABLE competition_registrations (
     round1_score    DECIMAL(5,1) NULL,              -- weighted, max 50.0
     round1_started_at  TIMESTAMP NULL,
     round1_submitted_at TIMESTAMP NULL,
+    -- Tie-break for qualifying, like the final's: time taken, never registration time.
+    round1_duration_seconds INT UNSIGNED NULL,
     round1_rank     INT UNSIGNED NULL,
     final_score     DECIMAL(5,1) NULL,
     final_started_at   TIMESTAMP NULL,
@@ -606,6 +608,10 @@ CREATE TABLE competition_registrations (
     final_duration_seconds INT UNSIGNED NULL,
     final_rank      SMALLINT UNSIGNED NULL,
     prize_amount    DECIMAL(10,2) NULL,
+    -- Prizes are paid outside the app (bKash/bank); an admin records it here.
+    prize_paid_at   TIMESTAMP    NULL,
+    prize_payout_ref VARCHAR(100) NULL,
+    prize_paid_by   INT UNSIGNED NULL,              -- the admin (users.id)
     created_at      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     -- One-time fee: a double-submitted form must not make a second row.
     UNIQUE KEY uq_registration (competition_id, user_id),

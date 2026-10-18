@@ -55,6 +55,11 @@ class Auth extends MY_Controller
 			if ($this->User_model->verify_otp($phone, $this->input->post('code'))) {
 				$this->session->unset_userdata('otp_phone');
 				$existing = $this->User_model->by_phone($phone);
+				if ($existing && $existing['status'] !== 'active') {
+					// Signing in would only bounce back here; say why instead.
+					$this->flash('warning', 'This account is suspended. Please contact us through the Contact page.');
+					redirect('login');
+				}
 				if ($existing) {
 					$this->sign_in($existing['id']);
 				}
@@ -90,7 +95,10 @@ class Auth extends MY_Controller
 			}
 			$id = $this->User_model->create($phone, $this->input->post('name'), (int) $this->input->post('class_id'), $school_id);
 			if ($id) {
-				$this->session->unset_userdata('verified_phone');
+				// Invited by a friend's link (see MY_Controller): record who.
+				$this->load->model('Referral_model');
+				$this->Referral_model->record((string) $this->session->userdata('ref_code'), $id);
+				$this->session->unset_userdata(array('verified_phone', 'ref_code'));
 				$this->sign_in($id, TRUE);
 			}
 		}

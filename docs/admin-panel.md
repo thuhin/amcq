@@ -20,12 +20,13 @@ testimonials. The admin panel replaces that and nothing else.
 | Decide Correct Me reports | `/admin/corrections` |
 | Read and track Contact Us messages | `/admin/messages` |
 | Add and publish testimonials (with consent) | `/admin/testimonials` |
-| See competitions and registration counts, read only | `/admin/competition` |
+| Look up students: profile, wallet and points ledgers, quizzes; suspend or reactivate | `/admin/students` |
+| Run the national competition: rules, stages, results, prize payment records | `/admin/competition` |
 
 | Not included | Why |
 |---|---|
-| Opening or running the national competition | The app has no Round 1 or Final code. Opening registration would let students pay Tk 99 for an event that cannot run. |
-| Student accounts, wallet or points adjustments | Money and reputation need their own rules and an audit trail. Separate work. |
+| Changing a wallet balance or Academic Points (refunds, adjustments) | Money and reputation need their own rules and an audit trail. Admins can see both, not change them. |
+| Paying prize money | Paid outside the app (bKash/bank); the panel records each payment. |
 | Creating admins from a screen | Command line only (section 3). |
 | WhatsApp Challenge, Friday Fun, School Competition | POST-MVP in blueprint v2.0 (`CLAUDE.md`). |
 | Payments, SMS, sending email | Not built anywhere in the app. |
@@ -110,7 +111,35 @@ consent is recorded again. Only an unpublished testimonial can be deleted.
 The three samples from the demo seed show "Not recorded"; they are placeholders
 and should be replaced with real ones.
 
-### 4.5 Check quiz coverage
+### 4.5 Look up a student
+Students lists everyone, searchable by name, mobile number or ID. A student's page
+shows the profile, the wallet ledger and the Academic Points history (each marked
+"matches its ledger" when the cached total equals the sum of its rows), recent
+quizzes, Correct Me reports, competition entry and who invited them. **Suspend**
+signs the student out at once and stops them signing in (they are told the account
+is suspended); **Reactivate** undoes it. Nothing on the page changes money or points.
+
+### 4.6 Run the national competition
+The competition page shows the stages and only the **next step**, with what it does
+and anything that stops it:
+
+| Step | What happens | It needs |
+|---|---|---|
+| Open registration | Students register and pay the entry fee from their wallet, once. | The full rules (proctoring, disputes, prize payment) saved under Settings: the student page promises them before registration opens. |
+| Open Round 1 | Registration closes. Each registrant gets their own random set: 10 easy, 10 medium, 10 hard, 45 minutes, one sitting. | Enough published questions for the class (the Question pool card shows it). |
+| Close Round 1 | Anyone still answering is submitted as they stand. Ranked by score, then time taken. The top 5% qualify, and anyone tied at the cut goes through. Participation certificates; the National Finalist badge for qualifiers; everyone is told. | — |
+| Open the final | Qualifiers get their own set: 15 easy, 20 medium, 15 hard, 75 minutes, one question at a time, no going back, avoiding their Round 1 questions where the pool allows. Arrange proctoring before you press it. | 15/20/15 published questions and at least one qualifier. |
+| Close the final | Stragglers submitted. Ranked by score, then time. Prize places from the prize table get the prize recorded and the winner Academic Points (50/25/10/5); finalist and winner certificates; everyone is told. | — |
+
+Stages only move forward, and each button carries the stage you were looking at, so a
+double click or a second admin cannot skip one. Settings (rules and announced dates)
+lock once Round 1 opens; the fee, prizes, question counts and time limits are not
+editable here because students pay against them. After the final, record each
+prize as you pay it: enter the bKash transaction ID or bank reference and press
+**Mark paid**; the winner is told. A place shared by an exact tie (same score, same
+time) is flagged so you can decide the payout.
+
+### 4.7 Check quiz coverage
 The dashboard lists the active chapters that are **not** playable, with published
 counts against 5/3/2 and what each lacks; "Show all chapters" lists the rest. It
 uses `Curriculum_model::mix_is_playable`, the same rule as the student site, so
@@ -149,6 +178,15 @@ the two cannot disagree. Only active classes are listed (Class 5 at launch).
 
 ## 6. Data
 
+**Competition** (migration `20261018120000_competition_rounds.sql`, same check
+as below): `competition_registrations` gained `round1_duration_seconds` (the Round 1
+tie-break) and `prize_paid_at`, `prize_payout_ref`, `prize_paid_by` (the payout
+record). The rounds use the existing `competition_answers` (weight frozen per
+answer) and `certificates` tables. The per-round mix is in constants
+(`COMPETITION_ROUND1_*` 10/10/10, `COMPETITION_FINAL_*` 15/20/15) and must add up to
+the competition row's question count before a round can open.
+
+
 **No account table.** Existing columns used: `users.user_type/email/password_hash`,
 `questions.verified_by/verified_at`, `correction_requests.reviewed_by/reviewed_at/review_note`,
 `contact_messages.status`, `testimonials.consent_at/is_published`.
@@ -177,15 +215,15 @@ server**; create the real admin from the command line there.
 |---|---|
 | `application/config/routes.php` | The `admin/...` routes (explicit) |
 | `application/core/Admin_Controller.php` | Base class: admin check, idle timeout, headers, admin layout. Loaded from `MY_Controller.php`. |
-| `application/controllers/admin/Admin_*.php` | `auth`, `dashboard`, `questions`, `corrections`, `messages`, `testimonials`, `competition`. Prefixed so class names never collide with student controllers (`Testimonials`, `Competition`). Thin. |
+| `application/controllers/admin/Admin_*.php` | `auth`, `dashboard`, `questions`, `corrections`, `messages`, `testimonials`, `students`, `competition`. Prefixed so class names never collide with student controllers (`Testimonials`, `Competition`). Thin. |
 | `application/controllers/cli/Admin.php` | The command-line tool. Refuses to run outside the command line. |
-| `application/models/` | `Admin_model` (accounts, sign-in, lock-out), `Question_model` (workflow and rules), `Testimonial_model` (consent rule), plus additions to `Correction_model` (queue, approve, reject), `Contact_model` (inbox, status), `Competition_model` (overview). Rules live here, not in controllers. |
+| `application/models/` | `Admin_model` (accounts, sign-in, lock-out), `Question_model` (workflow and rules), `Testimonial_model` (consent rule), `Student_model` (read only, plus suspend), `Competition_round_model` (rounds, grading, ranking, prizes, payout records), `Certificate_model`, `Referral_model`, plus additions to `Correction_model` (queue, approve, reject), `Contact_model` (inbox, status), `Competition_model` (settings, overview). Rules live here, not in controllers. |
 | `application/views/admin/` | Plain PHP; everything through `e()`, question text through `math_text()`. |
 | `asset/css/design.css` | An "Admin" section reusing the site's buttons, cards, tables and fields; tokens only. |
 | `asset/js/app.js` | One optional enhancement: list only the topics of the chosen chapter. The form works without it (the server checks the pair). |
 
 The layout is a top bar and a left **side menu** (Dashboard, Questions,
-Corrections, Messages, Testimonials, Competition), with a count on the sections
+Testimonials, Corrections, Messages, Students, Competition), with a count on the sections
 that have something waiting. From 900px wide it is a sticky sidebar; on a phone
 it becomes a menu button at the left of the top bar. The links are drawn once, in
 `views/admin/partials/nav.php`, and used for both. On a phone the coverage table
@@ -229,15 +267,20 @@ mode never shows it anyway).
 
 ## 10. Tests
 
-`tests/e2e.py` runs **218 checks, all passing**: the original 89 plus 129 for the
-panel, driven like a browser with the database checked after each step:
+`tests/e2e.py` runs **297 checks, all passing**: the original 89, 129 for the panel and
+79 for students, invites, the competition and certificates, driven like a browser
+with the database checked after each step:
 
 - sign-in: the dev shortcut is rendered only with local credentials and never leaks the password, same message for wrong email and password, lock-out, right password refused while locked, student session refused, CSRF and GET refusals, idle timeout, suspended admin signed out, password change
 - command line: every refusal, create, duplicate (case-insensitive), suspend/enable, the only active admin protected, `passwd` clearing a lock-out
 - questions: each validation, escaping, the verify gate, publish, the edit-returns-to-review rules, option ids unchanged, CRLF not counted as an edit, retire and restore, filters
 - coverage: 9 of 10 published is not playable and says what is missing; the 10th makes the chapter playable for students; retiring one makes it "Coming Soon" again
 - corrections: approve gives exactly one point (also on a double submit), notifies, pulls the question; reject needs a reason and gives nothing; decided reports stay decided; the student sees both outcomes
-- messages, testimonials (consent gate, consent cleared on new wording, homepage follows), competition read only
+- messages, testimonials (consent gate, consent cleared on new wording, homepage follows)
+- students: search, ledgers match, suspend signs out and blocks sign-in with a message, reactivate
+- invites: the link records who invited a new student; unknown codes and signed-in visitors change nothing; no reward
+- competition, four students end to end: rules required before registration, stale clicks ignored, fee charged once, own 10/10/10 set with frozen weights, resume, foreign options refused, 45 = all correct, timeout capped at 45:00, a tie at the cut qualifies both, no-shows out, participation certificates and finalist badges, the final refused without its pool, no going back or skipping ahead, a blank answer is a skip, 74/75, timeout at 75:00, prizes and winner points once, no wallet touched, payout needs a reference and is recorded once
+- certificates: public page, verify in any case, unknown code 404, unambiguous 12-character codes
 
 Setup: `database/reset_local.sh` first; `env.php` needs `ENABLE_LIVE_PAYMENTS` and
 `ENABLE_AI_GENERATION` set to `FALSE` (as `env.php.example` advises) and its URLs
@@ -247,7 +290,8 @@ matching `AMCQ_URL`; set `PHP_BIN` to a PHP 7.4 binary if `php` is not on the PA
 ## 11. Known limits
 
 - One role. Anyone who can sign in can do everything above, and the same admin may write and verify a question.
-- No screen to see or manage students, wallets or points.
+- Students, wallets and points can be seen, not changed (no refunds or adjustments).
+- The final is online only; proctoring is arranged outside the app.
 - Testimonial photos are not editable here (the column exists, left empty).
 - The lock-out can be triggered against a known admin email (section 3).
 
@@ -261,7 +305,11 @@ matching `AMCQ_URL`; set `PHP_BIN` to a PHP 7.4 binary if `php` is not on the PA
 | Source before verification | Required | Optional |
 | Editing a live question | Returns to review | Stays live with a warning |
 | Approving a report | Pulls the question by default | Leaves it live |
-| Competition | Read only | Status controls, once rounds exist |
+| Competition final | Online in the app; proctoring arranged outside | In person at centres, with scores entered by an admin; webcam proctoring |
+| Prize money | Paid outside the app; the panel records each payment | Credited to the wallet (cannot be withdrawn) |
+| Competition points | Only the prize table's winner points | Round 1 / final participation points, once the blueprint gives the values |
+| Invites | Tracked, no reward | A Taka bonus (Academic Points would break the points rule) |
+| Admin and money | See wallets and points, never change them | Refunds or credits with a required reason and an audit trail |
 | Opening a message | Marks it read | A "mark read" button only |
 | Changing a consented testimonial's wording | Clears consent, unpublishes | Keeps consent |
 | Extra nginx restriction on `/admin` | Recommended, optional | App login only |

@@ -38,6 +38,46 @@ class Competition_model extends CI_Model
 			array('competition_id' => $competition_id, 'user_id' => $user_id))->row_array();
 	}
 
+	/** Settings an admin may change: only before Round 1, while nobody has sat anything. */
+	const EDITABLE_STAGES = array('draft', 'registration');
+	const DATE_FIELDS = array('registration_opens_at', 'registration_closes_at', 'round1_opens_at', 'round1_closes_at', 'final_at');
+
+	/**
+	 * Save the rules text and announced dates. Fee, prizes, question counts and
+	 * time limits are not editable here: students pay against them.
+	 *
+	 * @return array errors (empty = saved)
+	 */
+	public function update_settings(array $c, array $in)
+	{
+		if ( ! in_array($c['status'], self::EDITABLE_STAGES, TRUE)) {
+			return array('_' => 'Settings are locked once Round 1 has opened.');
+		}
+		$errors = array();
+		$row = array('rules_html' => trim((string) (isset($in['rules_html']) ? $in['rules_html'] : '')));
+		if (mb_strlen($row['rules_html']) > 20000) {
+			$errors['rules_html'] = 'Keep the rules under 20,000 characters.';
+		}
+		foreach (self::DATE_FIELDS as $f) {
+			$v = trim((string) (isset($in[$f]) ? $in[$f] : ''));
+			if ($v === '') {
+				$row[$f] = NULL;
+				continue;
+			}
+			$t = DateTime::createFromFormat('Y-m-d\TH:i', $v);
+			if ( ! $t || $t->format('Y-m-d\TH:i') !== $v) {
+				$errors[$f] = 'Use a full date and time.';
+				continue;
+			}
+			$row[$f] = $t->format('Y-m-d H:i:s');
+		}
+		if ($errors) {
+			return $errors;
+		}
+		$this->db->update('competitions', $row, array('id' => $c['id']));
+		return array();
+	}
+
 	/** Every competition with its registration counts, newest first (admin, read only). */
 	public function overview()
 	{
@@ -86,6 +126,7 @@ class Competition_model extends CI_Model
 			$this->db->trans_rollback();
 			return 'already';
 		}
+		$this->db->query('INSERT IGNORE INTO user_badges (user_id, badge_id) SELECT ?, id FROM badges WHERE code = ?', array($user_id, 'competition_participant'));
 		$this->Activity_model->log($user_id, 'competition', 'Competition registration confirmed', $c['name']);
 		$this->Activity_model->notify($user_id, 'competition', 'You are registered for ' . $c['name']);
 		if ($this->db->trans_status() === FALSE) {

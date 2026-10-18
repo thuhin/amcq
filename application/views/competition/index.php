@@ -63,14 +63,63 @@ $fee = taka($c['entry_fee']); $pool = str_replace('.00', '', taka($c['prize_pool
   </div>
 
   <div class="amcq-card register-box" id="register">
-    <h2 class="h3">Register</h2>
+    <?php
+    $num = function ($v) { return rtrim(rtrim(number_format((float) $v, 1), '0'), '.'); };
+    $st = $registration ? $registration['status'] : NULL;
+    ?>
     <?php if ($registration): ?>
-      <p class="amcq-flash amcq-flash--success"><?= icon('check-circle') ?> You are registered. Status: <b><?= e(ucwords(str_replace('_', ' ', $registration['status']))) ?></b></p>
+      <h2 class="h3">Your competition</h2>
+      <?php if ($c['status'] === 'registration' || $c['status'] === 'draft'): ?>
+        <p class="amcq-flash amcq-flash--success"><?= icon('check-circle') ?> You are registered.</p>
+        <p>Round 1 opens <?= $c['round1_opens_at'] ? 'on <b>' . date('j M Y, g:i a', strtotime($c['round1_opens_at'])) . '</b>' : 'soon' ?>. It is <?= (int) $c['round1_question_count'] ?> questions in <?= (int) $c['round1_time_limit_minutes'] ?> minutes, in one sitting.</p>
+      <?php elseif ($c['status'] === 'round1'): ?>
+        <?php if ($round1_state === 'ready'): ?>
+          <p><b>Round 1 is open.</b> <?= (int) $c['round1_question_count'] ?> questions, <?= (int) $c['round1_time_limit_minutes'] ?> minutes, one sitting. The clock starts when you press Start and does not stop.</p>
+          <?= form_open('competition/round1/start') ?><button class="amcq-btn amcq-btn--primary amcq-btn--lg" type="submit"><?= icon('play') ?> Start Round 1</button><?= form_close() ?>
+        <?php elseif (in_array($round1_state, array('in_progress', 'expired'), TRUE)): ?>
+          <p><b>Your Round 1 is in progress.</b> The clock is running.</p>
+          <a class="amcq-btn amcq-btn--primary amcq-btn--lg" href="<?= site_url('competition/round1') ?>"><?= icon('arrow-right') ?> Continue Round 1</a>
+        <?php else: ?>
+          <p class="amcq-flash amcq-flash--success"><?= icon('check-circle') ?> Round 1 submitted. Results are announced when the round closes.</p>
+        <?php endif; ?>
+      <?php else: ?>
+        <?php if ($registration['round1_submitted_at']): ?>
+          <p>Round 1: <b><?= $num($registration['round1_score']) ?> / <?= $num($max1) ?></b><?= $registration['round1_rank'] ? ', rank <b>' . (int) $registration['round1_rank'] . '</b>' : '' ?>.</p>
+        <?php else: ?>
+          <p>You did not sit Round 1.</p>
+        <?php endif; ?>
+        <?php if ($c['status'] === 'grading'): ?>
+          <?php if ($st === 'qualified'): ?><p class="amcq-flash amcq-flash--success"><?= icon('trophy') ?> You qualified for the final. It will be announced here.</p>
+          <?php else: ?><p>You did not qualify for the final this time. Your participation certificate is in <a href="<?= site_url('certificates') ?>">Certificates</a>.</p><?php endif; ?>
+        <?php elseif ($c['status'] === 'final'): ?>
+          <?php if ($final_state === 'ready'): ?>
+            <p><b>The final is open.</b> <?= (int) $c['final_question_count'] ?> questions, <?= (int) $c['final_time_limit_minutes'] ?> minutes, one question at a time. You cannot go back to a question.</p>
+            <?= form_open('competition/final/start') ?><button class="amcq-btn amcq-btn--primary amcq-btn--lg" type="submit"><?= icon('play') ?> Start the final</button><?= form_close() ?>
+          <?php elseif (in_array($final_state, array('in_progress', 'expired'), TRUE)): ?>
+            <a class="amcq-btn amcq-btn--primary amcq-btn--lg" href="<?= site_url('competition/final') ?>"><?= icon('arrow-right') ?> Continue the final</a>
+          <?php elseif ($final_state === 'submitted'): ?>
+            <p class="amcq-flash amcq-flash--success"><?= icon('check-circle') ?> Final submitted. Results are announced when the final closes.</p>
+          <?php else: ?>
+            <p>The final is under way for the qualifiers.</p>
+          <?php endif; ?>
+        <?php elseif ($c['status'] === 'completed'): ?>
+          <?php if ($registration['final_rank']): ?>
+            <p>Final: <b><?= $num($registration['final_score']) ?> / <?= $num($maxf) ?></b>, <b><?= e(Competition_round_model::ordinal($registration['final_rank'])) ?> place</b>.</p>
+          <?php endif; ?>
+          <?php if ($st === 'winner'): ?>
+            <p class="amcq-flash amcq-flash--success"><?= icon('trophy') ?> Congratulations! Prize: <b class="amcq-money"><?= taka($registration['prize_amount']) ?></b><?= $registration['prize_paid_at'] ? ' (paid)' : '. We will contact you about payment.' ?></p>
+          <?php endif; ?>
+          <a class="amcq-btn amcq-btn--secondary" href="<?= site_url('certificates') ?>"><?= icon('certificate') ?> My certificates</a>
+        <?php endif; ?>
+      <?php endif; ?>
     <?php elseif ( ! $open): ?>
-      <p><b>Registration opens soon.</b> Read the rules above in the meantime. We'll announce the dates here.</p>
+      <h2 class="h3">Register</h2>
+      <p><b><?= in_array($c['status'], array('draft'), TRUE) ? 'Registration opens soon.' : 'Registration is closed.' ?></b> Read the rules above in the meantime.</p>
     <?php elseif ( ! $user): ?>
+      <h2 class="h3">Register</h2>
       <p>Sign in to register.</p><a class="amcq-btn amcq-btn--primary" href="<?= site_url('login') ?>">Sign In</a>
     <?php else: ?>
+      <h2 class="h3">Register</h2>
       <?= form_open('competition/register') ?>
         <p>You pay <b class="amcq-money"><?= $fee ?></b> from your wallet, once. You get Round 1 and, if you qualify, the final.</p>
         <label class="check"><input type="checkbox" name="confirm" value="1" required> I have read the rules and the refund policy.</label>

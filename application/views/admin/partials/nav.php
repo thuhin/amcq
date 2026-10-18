@@ -20,6 +20,9 @@ $groups = array(
 		'corrections'  => array('Corrections',  'admin/corrections',  'pencil',    $n('corrections')),
 		'messages'     => array('Messages',     'admin/messages',     'mail',      $n('messages')),
 	),
+	'People' => array(
+		'students'     => array('Students',     'admin/students',     'users',     0),
+	),
 	'Events' => array(
 		'competition'  => array('Competition',  'admin/competition',  'trophy',    0),
 	),

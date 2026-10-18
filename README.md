@@ -53,16 +53,22 @@ can stay the same.
 | Sign in (phone → OTP → name/class) | §4.9 | `/login` |
 | My Progress, Rank, Wallet, Profile | §5.2–5.8 | `/progress`, `/rank`, `/wallet`, `/profile` |
 | Correct Me | §5.5 | `/correct-me` |
-| Search, Notifications, Certificates, FAQ | header/sidebar in designs | `/search`, `/notifications`, `/certificates`, `/faq` |
+| Search, Notifications, FAQ | header/sidebar in designs | `/search`, `/notifications`, `/faq` |
+| Certificates: list, public printable page, verify a code | sidebar in design 12 | `/certificates`, `/certificate/{code}`, `/certificates/verify` |
+| Invite Friends (tracking only, no reward) | no mockup; site design language | `/invite`, `/signup?ref=CODE` |
 | Contact Us | no mockup; site design language | `/contact` |
 | Top Schools This Week, testimonials | homepage designs | `/schools`, `/testimonials` |
 | Leaderboard, Competition, Pricing, How It Works | §4.6–4.8 | |
-| **Admin panel**: questions, Correct Me, messages, testimonials, competition (read only) | no mockup; site design language | `/admin` ([docs/admin-panel.md](docs/admin-panel.md)) |
+| Competition rounds: Round 1 and the final | §10; quiz design 08 | `/competition/round1`, `/competition/final` |
+| **Admin panel**: questions, Correct Me, messages, testimonials, students, running the competition | no mockup; site design language | `/admin` ([docs/admin-panel.md](docs/admin-panel.md)) |
 
 Rules implemented: 5 easy / 3 medium / 2 hard per quiz; Tk 1 wallet debit for
 signed-in students; 3 free quizzes for guests, kept on signup; streak of 25 quizzes
 at 60%+ each within 100 h = 1 point; chapter mastery; tiers; national rank;
-one-time Tk 99 competition registration.
+one-time Tk 99 competition registration; Round 1 (10/10/10, weighted 1/1.5/2, 45 min,
+own random set per student), top 5% qualify (ties at the cut go through), the final
+(15/20/15, 75 min, one question at a time, no going back), ties broken by time taken,
+prizes and winner points from the prize table, certificates for every participant.
 
 Design features: four-step practice selector, timer pause (paused time is not
 counted, answers are refused while paused), "Try Harder Quiz" (same length and
@@ -76,11 +82,18 @@ size doesn't win), What Students Say, Watch Video.
   simulated; elsewhere the page says "coming soon".
 - **SMS.** No gateway. In development the OTP is shown on screen; elsewhere sign-in
   cannot complete until a gateway is added in `Auth::login()`.
-- **Admin gaps.** The admin panel (`/admin`) covers questions, Correct Me, messages and
-  testimonials, but not students, wallets, or running the competition. Its competition
-  page is read only: registration stays closed (`status = 'draft'`) because the rounds
-  are not built.
-- **Referrals, certificates, notifications UI.** Tables exist; no pages yet.
+- **Competition decisions still open** (see `docs/admin-panel.md`, "Competition"):
+  - The final is taken online in the app; proctoring is arranged outside it.
+  - Prize money is paid outside the app; an admin records each payment.
+  - The demo data shows "+10 for 85%+ in Round 1" and "+20 for final participation",
+    but no blueprint rule in the repo defines them, so they are not awarded. Only the
+    prize table's winner points are.
+  - Blueprint v2.0 says Round 1 is "max 50", but 10/10/10 at 1/1.5/2 is 45. The app
+    shows the real maximum (45).
+- **Referral rewards.** Invites are tracked; there is no reward yet (Academic Points
+  come only from streak, mastery, competition and corrections).
+- **Admin money tools.** Admins can see a student's wallet and points but cannot change
+  them: no refunds or adjustments from the panel.
 - **Legal pages.** Placeholders; the text must come from the business.
 - **Contact details are placeholders.** Address, phone, email and hours on the
   Contact Us page and footer come from `CONTACT_*` in `constants.php`; set the
@@ -187,7 +200,7 @@ example file says so for development), or the simulated top-up checks fail. If `
 is not on the PATH, set `PHP_BIN` to a PHP 7.4 binary (the admin command-line checks
 call it). Point the script at another URL with `AMCQ_URL`.
 
-218 checks (89 for the site, 129 for the admin panel) drive it like a browser and
+297 checks (89 for the site, 129 for the admin panel, 79 for students admin, invites, the competition rounds and certificates) drive it like a browser and
 verify the database after each step:
 grading, the 5/3/2 mix, ownership, CSRF, the guest limit, sign-in, Tk 1 debits,
 streak and mastery rules, double-submit safety, the timer and pause, Try Harder,

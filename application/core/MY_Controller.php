@@ -30,6 +30,13 @@ class MY_Controller extends CI_Controller
 				$this->session->unset_userdata('user_id');
 			}
 		}
+
+		// "Invite a friend": a visitor arriving with ?ref=CODE keeps it until
+		// they create an account (Auth::register). Ignored once signed in.
+		$ref = strtoupper(trim((string) $this->input->get('ref')));
+		if ($ref !== '' && ! $this->user && preg_match('/^[A-Z0-9]{4,12}$/', $ref)) {
+			$this->session->set_userdata('ref_code', $ref);
+		}
 	}
 
 	/**

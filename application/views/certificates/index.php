@@ -10,6 +10,7 @@ $labels = array('participation' => 'Participation Certificate', 'finalist' => 'F
     <span><?= e($c['competition']) ?> <?= (int) $c['year'] ?></span>
     <?php if ($c['result_label']): ?><span class="amcq-muted"><?= e($c['result_label']) ?></span><?php endif; ?>
     <small class="amcq-muted">Verification ID: <b><?= e($c['verification_code']) ?></b></small>
+    <a class="link-arrow" href="<?= site_url('certificate/' . $c['verification_code']) ?>">View and print <?= icon('arrow-right') ?></a>
   </li>
   <?php endforeach; ?>
 </ul>

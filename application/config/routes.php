@@ -54,6 +54,13 @@ $route['quiz/(:num)/resume']             = 'quiz/resume/$1';
 $route['leaderboard']                    = 'leaderboard/index';
 $route['competition']                    = 'competition/index';
 $route['competition/register']           = 'competition/register';
+$route['competition/(round1|final)']        = 'competition/play/$1';
+$route['competition/(round1|final)/start']  = 'competition/start/$1';
+$route['competition/(round1|final)/answer'] = 'competition/answer/$1';
+$route['competition/(round1|final)/submit'] = 'competition/submit/$1';
+$route['certificate/([A-Za-z0-9]+)']      = 'certificates/show/$1';
+$route['certificates/verify']             = 'certificates/verify';
+$route['invite']                          = 'invite/index';
 $route['contact']                        = 'contact/index';
 
 // Admin panel (docs/admin-panel.md). Controllers are prefixed Admin_ so their
@@ -80,4 +87,10 @@ $route['admin/testimonials/(:num)/publish']  = 'admin/admin_testimonials/publish
 $route['admin/testimonials/(:num)/unpublish'] = 'admin/admin_testimonials/unpublish/$1';
 $route['admin/testimonials/(:num)/delete']   = 'admin/admin_testimonials/delete/$1';
 $route['admin/competition']                  = 'admin/admin_competition/index';
+$route['admin/competition/settings']         = 'admin/admin_competition/settings';
+$route['admin/competition/advance']          = 'admin/admin_competition/advance';
+$route['admin/competition/paid/(:num)']      = 'admin/admin_competition/paid/$1';
+$route['admin/students']                     = 'admin/admin_students/index';
+$route['admin/students/(:num)']              = 'admin/admin_students/show/$1';
+$route['admin/students/(:num)/status']       = 'admin/admin_students/status/$1';
 $route['(how-it-works|pricing|faq|about|terms|privacy|refund-policy|correct-me-policy)'] = 'pages/show/$1';

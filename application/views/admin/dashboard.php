@@ -34,7 +34,7 @@ $pct_playable = $total ? round(100 * $playable / $total) : 0;
 <ul class="kpis">
   <?= $kpi('admin/questions?status=published', 'book-open', $by_status['published'], 'Published questions', 'View') ?>
   <?= $kpi('admin/questions?status=draft', 'file', $by_status['draft'], 'Draft questions', 'View') ?>
-  <li><div class="kpi"><span class="kpi__icon"><?= icon('users') ?></span><span class="kpi__body"><b><?= (int) $stats['students'] ?></b><span>Students</span></span></div></li>
+  <?= $kpi('admin/students', 'users', $stats['students'], 'Students', 'View') ?>
   <li><div class="kpi"><span class="kpi__icon"><?= icon('bolt') ?></span><span class="kpi__body"><b><?= (int) $stats['quizzes_today'] ?></b><span>Quizzes completed today</span></span></div></li>
 </ul>
 

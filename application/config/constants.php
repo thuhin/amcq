@@ -190,3 +190,17 @@ define('ADMIN_LOGIN_MAX_FAILS',      5);      // wrong passwords per email...
 define('ADMIN_LOGIN_MAX_FAILS_IP',   20);     // ...and per IP address,
 define('ADMIN_LOGIN_LOCK_MINUTES',   15);     // within this window, then locked out
 define('ADMIN_PAGE_SIZE',            25);     // rows per page in admin lists
+
+/*
+| National competition rounds (blueprint §10). Question counts and time limits
+| live on the competitions row; these are the difficulty mix per round, and
+| must add up to that row's count (checked before a round can open). Scoring
+| weights come from difficulties.weight (1 / 1.5 / 2), frozen per answer.
+*/
+define('COMPETITION_ROUND1_EASY',   10);
+define('COMPETITION_ROUND1_MEDIUM', 10);
+define('COMPETITION_ROUND1_HARD',   10);
+define('COMPETITION_FINAL_EASY',    15);
+define('COMPETITION_FINAL_MEDIUM',  20);
+define('COMPETITION_FINAL_HARD',    15);
+define('CERTIFICATE_CODE_LENGTH',   12);   // = certificates.verification_code CHAR(12)

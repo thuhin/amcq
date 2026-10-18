@@ -146,3 +146,16 @@
     form.querySelector('button[type=submit]').focus();
   });
 })();
+
+/* Invite page: copy the invite link. The field is selectable without JS. */
+(function () {
+  var btn = document.querySelector('[data-copy]');
+  if (!btn) return;
+  btn.addEventListener('click', function () {
+    var field = document.querySelector(btn.getAttribute('data-copy'));
+    field.select();
+    var done = function () { btn.querySelector('span').textContent = 'Copied'; };
+    if (navigator.clipboard) { navigator.clipboard.writeText(field.value).then(done, function () { document.execCommand('copy'); done(); }); }
+    else { document.execCommand('copy'); done(); }
+  });
+})();

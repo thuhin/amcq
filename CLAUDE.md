@@ -85,8 +85,20 @@ contradiction plus an open legal question about peer point wagering.
   the transaction that locks the report row. A rejection needs a reason: students read it.
 - **A testimonial is published only with recorded guardian consent**; changing its
   wording clears the consent.
-- **Competition is read only in the admin** until Round 1 and the Final exist:
-  opening registration would take Tk 99 for an event that cannot run.
+- **Competition stages only move forward** (draft, registration, round1, grading,
+  final, completed) through `Competition_round_model::advance()`, each with its
+  pre-checks; registrations are paid and a sat round cannot be re-opened fairly.
+  Per-round mix is `COMPETITION_ROUND1_*` / `COMPETITION_FINAL_*`; weights come from
+  `difficulties.weight`, frozen per answer. Round 1's real maximum is 45 (the
+  blueprint's "max 50" does not add up): always compute it, never type it.
+- **Competition ties break on time taken, never registration time**; equal score and
+  time share a rank, and a tie at the qualifying cut goes through.
+- **Prize money never touches a wallet.** It is paid outside the app and only
+  recorded (`prize_paid_at/prize_payout_ref/prize_paid_by`). Winner points come from
+  `competition_prizes.points`; no other competition points until the blueprint gives
+  values (the demo data's +10/+20 rows are not a rule).
+- **Invites are tracked, not rewarded.** Academic Points come only from streak,
+  mastery, competition and corrections; a Taka bonus is an owner decision.
 - `database/test_data/*_admin_test_data.sql` creates a dev admin with a known
   password. Never load it on a server. The click-to-fill shield on `/admin/login`
   prints that password into the page, so it is gated three ways (development, a local
