@@ -1,5 +1,12 @@
 <?php defined('BASEPATH') OR exit('No direct script access allowed');
 /** @var array $page  @var array|null $admin  @var array|null $flash  @var array $attention */
+$initials = '';
+if ($admin) {
+	foreach (preg_split('/\s+/', trim($admin['name'])) as $w) {
+		$initials .= mb_strtoupper(mb_substr($w, 0, 1));
+	}
+	$initials = mb_substr($initials, 0, 2);
+}
 ?>
 <!doctype html>
 <html lang="en">
@@ -15,52 +22,56 @@
 <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
 <link rel="stylesheet" href="<?= asset('css/design.css') ?>">
 </head>
-<body class="admin">
+<body class="admin<?= $admin ? ' admin--in' : '' ?>">
 <?php $this->load->view('partials/icons'); ?>
 <a class="skip-link" href="#main">Skip to content</a>
 
-<header class="admin-bar">
-  <div class="admin-container admin-bar__inner">
+<?php if ($admin): ?>
+<aside class="admin-sidebar" aria-label="Admin sections">
+  <a class="admin-sidebar__brand" href="<?= site_url('admin') ?>" aria-label="AcademicMCQ admin home">
+    <span class="admin-sidebar__logo"><?php $this->load->view('partials/logo'); ?></span>
+    <span><strong>Academic<span>MCQ</span></strong><small>Admin panel</small></span>
+  </a>
+  <nav class="admin-sidebar__nav"><?php $this->load->view('admin/partials/nav', array('variant' => 'side')); ?></nav>
+  <div class="admin-sidebar__foot">
+    <a class="admin-nav__link" href="<?= site_url('') ?>" target="_blank" rel="noopener"><?= icon('globe') ?><span>View site</span><?= icon('arrow-right', 'admin-nav__ext') ?></a>
+  </div>
+</aside>
+<?php endif; ?>
+
+<div class="admin-frame">
+  <header class="admin-bar">
     <?php if ($admin): ?>
-      <!-- Narrow screens: the side menu becomes this button. -->
+      <!-- Narrow screens: the sidebar becomes this button. -->
       <details class="mobile-menu admin-mobile-menu">
         <summary aria-label="Menu"><?= icon('menu') ?></summary>
         <nav class="menu-panel" aria-label="Admin sections">
           <?php $this->load->view('admin/partials/nav', array('variant' => 'menu')); ?>
-          <a href="<?= site_url('') ?>" target="_blank" rel="noopener"><?= icon('arrow-right') ?> View site</a>
+          <a href="<?= site_url('') ?>" target="_blank" rel="noopener"><?= icon('globe') ?> View site</a>
         </nav>
       </details>
     <?php endif; ?>
-    <a class="brand" href="<?= site_url('admin') ?>" aria-label="AcademicMCQ admin home">
+    <a class="brand admin-bar__brand" href="<?= site_url('admin') ?>" aria-label="AcademicMCQ admin home">
       <?php $this->load->view('partials/logo'); ?>
       <span class="brand__text"><strong class="brand__word">Academic<span>MCQ</span></strong></span>
     </a>
     <span class="admin-tag"><?= icon('shield') ?> Admin</span>
     <?php if ($admin): ?>
-      <div class="admin-bar__actions">
-        <a class="admin-bar__link" href="<?= site_url('') ?>" target="_blank" rel="noopener">View site <?= icon('arrow-right') ?></a>
-        <details class="user-menu">
-          <summary aria-label="Account menu">
-            <span class="avatar" aria-hidden="true"><?= icon('user') ?></span>
-            <span class="user-menu__text"><strong><?= e($admin['name']) ?></strong><small><?= e($admin['email']) ?></small></span>
-            <?= icon('chevron-down', 'user-menu__chev') ?>
-          </summary>
-          <div class="menu-panel">
-            <p class="menu-panel__who"><strong><?= e($admin['name']) ?></strong><span><?= e($admin['email']) ?></span></p>
-            <a href="<?= site_url('admin/password') ?>"><?= icon('lock') ?> Change password</a>
-            <?= form_open('admin/logout', array('class' => 'menu-panel__form')) ?><button type="submit"><?= icon('logout') ?> Sign out</button><?= form_close() ?>
-          </div>
-        </details>
-      </div>
+      <p class="admin-bar__date"><?= icon('calendar') ?> <?= e(date('l, j F Y')) ?></p>
+      <details class="user-menu admin-user">
+        <summary aria-label="Account menu">
+          <span class="admin-avatar" aria-hidden="true"><?= e($initials) ?></span>
+          <span class="user-menu__text"><strong><?= e($admin['name']) ?></strong><small><?= e($admin['email']) ?></small></span>
+          <?= icon('chevron-down', 'user-menu__chev') ?>
+        </summary>
+        <div class="menu-panel">
+          <p class="menu-panel__who"><strong><?= e($admin['name']) ?></strong><span><?= e($admin['email']) ?></span></p>
+          <a href="<?= site_url('admin/password') ?>"><?= icon('lock') ?> Change password</a>
+          <?= form_open('admin/logout', array('class' => 'menu-panel__form')) ?><button type="submit"><?= icon('logout') ?> Sign out</button><?= form_close() ?>
+        </div>
+      </details>
     <?php endif; ?>
-  </div>
-</header>
+  </header>
 
-<div class="admin-container admin-shell<?= $admin ? '' : ' admin-shell--bare' ?>">
-  <?php if ($admin): ?>
-  <aside class="admin-sidebar" aria-label="Admin sections">
-    <nav><?php $this->load->view('admin/partials/nav', array('variant' => 'side')); ?></nav>
-  </aside>
-  <?php endif; ?>
   <main id="main" class="admin-main">
     <?php if ($flash): ?><p class="amcq-flash amcq-flash--<?= e($flash['type']) ?>" role="status"><?= e($flash['message']) ?></p><?php endif; ?>
